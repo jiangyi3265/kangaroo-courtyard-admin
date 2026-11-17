@@ -1,0 +1,3 @@
+<template><div><el-alert class="ops-help" title="管理小程序首页推荐，以及「找机会 → 全职旅行」顶上的培训横幅" type="info" :closable="false" show-icon><p><b>首页推荐</b>：首页栏目选「近期活动」或「为你推荐」，再搜索已发布的内容。展示城市留空时，用于用户尚未选择城市的全国首页；填写城市时，用于该城市首页。每个栏目最多展示 3 条，显示顺序越小越靠前；不足时自动补充有效内容。下架、过期的内容不会展示。近期活动只展示未来 14 天内开始且开放报名的活动。</p><p><b>全职旅行培训横幅</b>（小程序「找机会 → 全职旅行」列表顶上那一条，用户点进去是活动详情、可以直接报名）：① 先在「社区活动」里新建培训活动，点「通过」开放报名；② 回到这里点「新增」，首页栏目选「全职培训横幅」，推荐内容输入活动名选中；③ 展示城市留空 = 所有城市都显示；填了城市 = 用户在全职旅行里选了这个城市才显示（优先于留空的那条）。同一时间只显示 1 条（显示顺序最小的那条），活动开始后自动不再显示；想提前撤下，把状态改成「停用」。</p></el-alert><ext-crud entity="homepick" /></div></template>
+<script setup name="HomepageContent">import ExtCrud from '../ExtCrud.vue'</script>
+<style scoped>.ops-help{margin:20px 20px 0;width:auto}p{margin:6px 0;line-height:1.7}</style>

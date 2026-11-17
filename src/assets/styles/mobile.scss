@@ -1,0 +1,312 @@
+/**
+ * 手机网页版适配（全站通用，不按页面写）：只在屏幕宽度 ≤ 768px 时生效，电脑上的样子不变。
+ * 规矩：页面整体不横向滚动；表格在自己的框里左右滑；弹窗 / 抽屉 / 提示框不超出屏幕；表单标签放到输入框上面；
+ * 按钮和输入框至少 36~40px 高，手指好点。
+ * 很多弹窗在模板里写死了 width="680px" 之类的宽度（Element Plus 写在行内样式上），这里用 !important 盖掉。
+ */
+@media (max-width: 768px) {
+  /* ---------- 页面外框 ---------- */
+  .app-container {
+    padding: 10px;
+  }
+
+  /* 顶栏：面包屑在手机上收起（Navbar 里换成当前页名），用户名太长时省略 */
+  .navbar {
+    .breadcrumb-container,
+    .breadcrumb-container.el-breadcrumb {
+      display: none !important;
+    }
+    .avatar-container .avatar-wrapper .user-nickname {
+      display: inline-block;
+      max-width: 6em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+  }
+
+  /* 标签栏：一行左右滑，不换行不撑宽 */
+  .tags-view-container .tags-view-wrapper .tags-view-item {
+    padding: 0 10px;
+  }
+
+  /* ---------- 表单：标签在上、输入框占满一行 ---------- */
+  .el-form .el-form-item {
+    display: block;
+    margin-right: 0;
+  }
+  .el-form .el-form-item__label {
+    display: block;
+    width: auto !important;
+    max-width: 100%;
+    height: auto;
+    min-height: 0;
+    line-height: 22px;
+    margin-bottom: 6px;
+    padding-right: 0;
+    text-align: left;
+    white-space: normal;
+  }
+  .el-form .el-form-item__content {
+    margin-left: 0 !important;
+    min-width: 0;
+  }
+  /* 搜索栏（行内表单）：两项并排一行（一项一行要往下翻一整屏才看到列表）；日期范围和最后一行按钮占满一行。
+     页面上写死的 style="width: 200px" 一并盖掉。手机上搜索栏默认先收起（各页 showSearch 按屏宽取初值），点右边放大镜再展开 */
+  .el-form--inline {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 10px;
+
+    .el-form-item {
+      width: calc(50% - 5px) !important;
+      margin-right: 0;
+    }
+    .el-form-item:last-child,
+    .el-form-item:has(.el-date-editor--daterange),
+    .el-form-item:has(.el-date-editor--datetimerange) {
+      width: 100% !important;
+    }
+    .el-form-item .el-input,
+    .el-form-item .el-select,
+    .el-form-item .el-cascader,
+    .el-form-item .el-autocomplete,
+    .el-form-item .el-input-number,
+    .el-form-item .el-date-editor,
+    .el-form-item .el-tree-select {
+      width: 100% !important;
+    }
+  }
+  /* 弹窗里的表单：两列并排的（el-col span=12）改成一列；输入框不超过一行宽 */
+  .el-dialog .el-form {
+    .el-row > .el-col {
+      max-width: 100%;
+      flex: 0 0 100%;
+    }
+    .el-input,
+    .el-select,
+    .el-cascader,
+    .el-autocomplete,
+    .el-date-editor,
+    .el-input-number,
+    .el-textarea {
+      max-width: 100%;
+    }
+  }
+  .el-date-editor.el-input,
+  .el-date-editor.el-input__wrapper,
+  .el-date-editor--daterange,
+  .el-date-editor--datetimerange {
+    max-width: 100%;
+  }
+  /* 手指好点：输入框、下拉、普通按钮高一点 */
+  .el-input__wrapper,
+  .el-select__wrapper {
+    min-height: 36px;
+  }
+  .el-button:not(.is-link):not(.is-text):not(.is-circle) {
+    min-height: 36px;
+  }
+  .el-form-item:last-child {
+    margin-bottom: 12px;
+  }
+  /* 搜索栏最后一项（搜索 / 重置按钮）两个按钮平分一行 */
+  .el-form--inline .el-form-item:last-child .el-form-item__content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    > .el-button {
+      flex: 1 1 0;
+      margin-left: 0;
+    }
+  }
+
+  /* ---------- 表格上方的操作按钮：自动换行 ---------- */
+  .mb8 {
+    row-gap: 8px;
+  }
+  .el-row.mb8 > .el-col .el-button {
+    margin-bottom: 0;
+  }
+
+  /* ---------- 表格：在自己的框里左右滑，固定在右边的「操作」列照常可点 ---------- */
+  .el-table {
+    max-width: 100%;
+  }
+  .el-table .el-table__cell .cell {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  /* 操作列里的文字按钮：放不下就换行，点按区域大一点 */
+  .el-table .fixed-width .cell,
+  .el-table .small-padding .cell {
+    white-space: normal;
+  }
+  .el-table .el-button.is-link {
+    min-height: 28px;
+    margin: 2px 4px;
+    padding: 4px 2px;
+  }
+  .el-table .el-button.is-link + .el-button.is-link {
+    margin-left: 4px;
+  }
+
+  /* ---------- 分页：只留 总数 / 上一页 / 页码 / 下一页，放不下就换行 ---------- */
+  .pagination-container {
+    justify-content: center;
+    margin-top: 12px;
+
+    .el-pagination {
+      flex-wrap: wrap;
+      justify-content: center;
+      row-gap: 8px;
+      max-width: 100%;
+    }
+  }
+
+  /* ---------- 弹窗：宽度 94%，上边距小一点，内容太长在弹窗里滚动，底部按钮一直看得见 ---------- */
+  .el-dialog:not(.is-fullscreen) {
+    --el-dialog-width: 94vw !important;
+    width: 94vw !important;
+    max-width: 94vw;
+    margin-top: 3vh !important;
+    margin-bottom: 3vh;
+  }
+  .el-dialog {
+    --el-dialog-padding-primary: 12px;
+  }
+  .el-dialog:not(.is-fullscreen) .el-dialog__body {
+    max-height: calc(100vh - 6vh - 130px);
+    max-height: calc(100dvh - 6vh - 130px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  .el-dialog__footer {
+    .dialog-footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+
+      .el-button {
+        margin-left: 0;
+      }
+    }
+  }
+  .el-dialog .el-transfer {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    .el-transfer-panel {
+      width: 100%;
+    }
+    .el-transfer__buttons {
+      padding: 8px 0;
+      text-align: center;
+    }
+  }
+
+  /* ---------- 抽屉：占满整屏 ---------- */
+  .el-drawer.rtl,
+  .el-drawer.ltr {
+    width: 100% !important;
+  }
+  .el-drawer.ttb,
+  .el-drawer.btt {
+    max-height: 100%;
+  }
+  .el-drawer__header {
+    margin-bottom: 12px;
+    padding: 12px 12px 0;
+  }
+  .el-drawer__body {
+    padding: 12px;
+  }
+
+  /* ---------- 确认框 / 输入原因框 ---------- */
+  .el-message-box {
+    --el-messagebox-width: 90vw;
+    max-width: 90vw;
+  }
+  .el-message {
+    max-width: calc(100vw - 24px);
+  }
+
+  /* ---------- 详情描述：一行只放一项 ---------- */
+  .el-descriptions__table:not(.is-bordered) {
+    tr {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .el-descriptions__cell {
+      flex: 1 0 100%;
+    }
+  }
+  .el-descriptions__table.is-bordered {
+    table-layout: fixed;
+
+    .el-descriptions__cell {
+      word-break: break-all;
+    }
+  }
+
+  /* ---------- 日期范围选择面板：两个月份仍左右并排，但压窄到一屏宽（上下排会太高，下半截点不到） ---------- */
+  .el-date-range-picker.el-picker-panel {
+    width: 94vw !important;
+    max-width: 94vw;
+
+    .el-picker-panel__body {
+      min-width: 0;
+    }
+    .el-picker-panel__sidebar {
+      display: none;
+    }
+    .el-picker-panel__sidebar + .el-picker-panel__body {
+      margin-left: 0;
+    }
+    .el-date-range-picker__content {
+      padding: 8px 4px;
+    }
+    .el-date-range-picker__header div {
+      font-size: 12px;
+      white-space: nowrap;
+      margin-left: 28px;
+      margin-right: 28px;
+    }
+    .el-date-range-picker__header-label {
+      padding: 0 1px;
+    }
+    .el-picker-panel__icon-btn {
+      margin-top: 4px;
+    }
+    .el-date-table th {
+      padding: 4px 0;
+    }
+    .el-date-range-picker__time-header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .el-date-range-picker__editors-wrap {
+      display: flex;
+      gap: 6px;
+    }
+  }
+  .el-date-picker.el-picker-panel {
+    max-width: 94vw;
+  }
+
+  /* 下拉列表不比屏幕宽 */
+  .el-select-dropdown,
+  .el-cascader__dropdown,
+  .el-popper {
+    max-width: 94vw;
+  }
+  .el-cascader-panel {
+    overflow-x: auto;
+  }
+}

@@ -76,8 +76,10 @@ service.interceptors.request.use(config => {
 service.interceptors.response.use(res => {
     // 未设置状态码则默认成功状态
     const code = res.data.code || 200
-    // 获取错误信息
-    const msg = errorCode[code] || res.data.msg || errorCode['default']
+    // 获取错误信息。403 优先用后端给的原因：业务规则拒绝也回 403（如「审批人与登记打款的人不能是同一个账号」），
+    // 一律换成「当前操作没有权限」会让超级管理员也摸不着头脑；404 同理（如「评论不存在」「结算单不存在」比「访问资源不存在」清楚）。
+    // 后端没给原因时仍用通用文案
+    const msg = ((code === 403 || code === 404) && res.data.msg) || errorCode[code] || res.data.msg || errorCode['default']
     // 二进制数据则直接返回
     if (res.request.responseType ===  'blob' || res.request.responseType ===  'arraybuffer') {
       return res.data
@@ -88,7 +90,7 @@ service.interceptors.response.use(res => {
         ElMessageBox.confirm('登录状态已过期，您可以继续留在该页面，或者重新登录', '系统提示', { confirmButtonText: '重新登录', cancelButtonText: '取消', type: 'warning' }).then(() => {
           isRelogin.show = false
           useUserStore().logOut().then(() => {
-            location.href = '/index'
+            location.href = import.meta.env.BASE_URL + 'index'
           })
       }).catch(() => {
         isRelogin.show = false
@@ -103,7 +105,9 @@ service.interceptors.response.use(res => {
       return Promise.reject(new Error(msg))
     } else if (code !== 200) {
       ElNotification.error({ title: msg })
-      return Promise.reject('error')
+      const error = new Error(msg)
+      error.isBusinessError = true
+      return Promise.reject(error)
     } else {
       return  Promise.resolve(res.data)
     }

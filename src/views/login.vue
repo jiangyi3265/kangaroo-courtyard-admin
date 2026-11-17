@@ -184,6 +184,8 @@ getCookie()
   border-radius: 6px;
   background: #ffffff;
   width: 400px;
+  /* 手机上左右各留 16px，不超出屏幕 */
+  max-width: calc(100vw - 32px);
   padding: 25px 25px 5px 25px;
   z-index: 1;
   .el-input {

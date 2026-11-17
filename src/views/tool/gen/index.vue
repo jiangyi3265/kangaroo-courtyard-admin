@@ -156,7 +156,7 @@ const { proxy } = getCurrentInstance()
 
 const tableList = ref([])
 const loading = ref(true)
-const showSearch = ref(true)
+const showSearch = ref(window.innerWidth > 768)  // 手机上搜索栏先收起，点右边放大镜再展开
 const ids = ref([])
 const single = ref(true)
 const multiple = ref(true)

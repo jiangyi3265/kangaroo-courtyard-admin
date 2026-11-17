@@ -52,6 +52,14 @@ watchEffect(() => {
   }
 })
 
+// 手机上侧边菜单是抽屉：点了某个菜单、页面切过去以后自动收起，不用再点一下空白处
+const route = useRoute()
+watch(() => route.path, () => {
+  if (device.value === 'mobile' && sidebar.value.opened) {
+    useAppStore().closeSideBar({ withoutAnimation: false })
+  }
+})
+
 function handleClickOutside() {
   useAppStore().closeSideBar({ withoutAnimation: false })
 }

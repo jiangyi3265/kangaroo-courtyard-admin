@@ -19,7 +19,7 @@
       </template>
     </template>
     <template v-if="unmatch && showValue">
-      {{ unmatchArray | handleArray }}
+      {{ handleArray(unmatchArray) }}
     </template>
   </div>
 </template>
@@ -68,6 +68,12 @@ const unmatch = computed(() => {
   return unmatch // 返回标志的值
 })
 
+// 未匹配时的兜底回显。
+// 原来模板里写的是 Vue2 过滤器语法 `{{ unmatchArray | handleArray }}`，但 Vue3 已经移除了过滤器，
+// 这个表达式会被当成按位或求值：Number(['xxx']) 得到 NaN，NaN | 0 的结果是 0，
+// 于是任何非数字的脏值（袋鼠的业务字典全是 published/volunteer 这种英文码）都被渲染成字面量 0。
+// 0 恰好又是 sys_normal_disable 里"正常"的字典值，运营看到一列 0 会以为是合法取值，
+// 完全察觉不到数据已经漂移。所以这里必须改成普通函数调用，把未匹配的原始码原样显示出来。
 function handleArray(array) {
   if (array.length === 0) return ""
   return array.reduce((pre, cur) => {

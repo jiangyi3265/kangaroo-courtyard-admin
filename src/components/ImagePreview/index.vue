@@ -1,6 +1,6 @@
 <template>
   <el-image
-    :src="`${realSrc}`"
+    :src="realSrc"
     fit="cover"
     :style="`width:${realWidth};height:${realHeight};`"
     :preview-src-list="realSrcList"
@@ -15,7 +15,8 @@
 </template>
 
 <script setup>
-import { isExternal } from "@/utils/validate"
+// 小程序包内图片（/static/...）从小程序 H5 站点取，其余照旧走后端接口前缀，见 utils/imageUrl.js
+import { imageUrl } from "@/utils/imageUrl"
 
 const props = defineProps({
   src: {
@@ -37,10 +38,7 @@ const realSrc = computed(() => {
     return
   }
   let real_src = props.src.split(",")[0]
-  if (isExternal(real_src)) {
-    return real_src
-  }
-  return import.meta.env.VITE_APP_BASE_API + real_src
+  return imageUrl(real_src)
 })
 
 const realSrcList = computed(() => {
@@ -48,14 +46,7 @@ const realSrcList = computed(() => {
     return
   }
   let real_src_list = props.src.split(",")
-  let srcList = []
-  real_src_list.forEach(item => {
-    if (isExternal(item)) {
-      return srcList.push(item)
-    }
-    return srcList.push(import.meta.env.VITE_APP_BASE_API + item)
-  })
-  return srcList
+  return real_src_list.map(item => imageUrl(item))
 })
 
 const realWidth = computed(() =>

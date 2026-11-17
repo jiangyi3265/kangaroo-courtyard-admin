@@ -10,6 +10,7 @@
       :data="data"
       :limit="limit"
       :on-error="handleUploadError"
+      :on-remove="handleUploadRemove"
       :on-exceed="handleExceed"
       ref="imageUpload"
       :before-remove="handleDelete"
@@ -50,6 +51,8 @@
 <script setup>
 import { getToken } from "@/utils/auth"
 import { isExternal } from "@/utils/validate"
+// 小程序包内图片（/static/...）从小程序 H5 站点取，保存时还原成原路径，见 utils/imageUrl.js
+import { imageUrl, imagePath } from "@/utils/imageUrl"
 import Sortable from 'sortablejs'
 
 const props = defineProps({
@@ -71,7 +74,7 @@ const props = defineProps({
   // 大小限制(MB)
   fileSize: {
     type: Number,
-    default: 5
+    default: 20
   },
   // 文件类型, 例如['png', 'jpg', 'jpeg']
   fileType: {
@@ -97,7 +100,7 @@ const props = defineProps({
 
 const { proxy } = getCurrentInstance()
 const emit = defineEmits()
-const number = ref(0)
+const pendingUploads = new Set()
 const uploadList = ref([])
 const dialogImageUrl = ref("")
 const dialogVisible = ref(false)
@@ -117,7 +120,8 @@ watch(() => props.modelValue, val => {
     fileList.value = list.map(item => {
       if (typeof item === "string") {
         if (item.indexOf(baseUrl) === -1 && !isExternal(item)) {
-          item = { name: baseUrl + item, url: baseUrl + item }
+          const url = imageUrl(item)
+          item = { name: url, url: url }
         } else {
           item = { name: item, url: item }
         }
@@ -155,14 +159,16 @@ function handleBeforeUpload(file) {
     return false
   }
   if (props.fileSize) {
-    const isLt = file.size / 1024 / 1024 < props.fileSize
+    const isLt = file.size / 1024 / 1024 <= props.fileSize
     if (!isLt) {
       proxy.$modal.msgError(`上传头像图片大小不能超过 ${props.fileSize} MB!`)
       return false
     }
   }
   proxy.$modal.loading("正在上传图片，请稍候...")
-  number.value++
+  pendingUploads.add(file.uid)
+  emit("busy", true)
+  return true
 }
 
 // 文件个数超出
@@ -172,13 +178,12 @@ function handleExceed() {
 
 // 上传成功回调
 function handleUploadSuccess(res, file) {
-  if (res.code === 200) {
-    uploadList.value.push({ name: res.fileName, url: res.fileName })
+  if (!pendingUploads.delete(file.uid)) return
+  if (res.code === 200 && res.fileName) {
+    uploadList.value.push({ uid: file.uid, name: res.fileName, url: res.fileName })
     uploadedSuccessfully()
   } else {
-    number.value--
-    proxy.$modal.closeLoading()
-    proxy.$modal.msgError(res.msg)
+    proxy.$modal.msgError(res.msg || "上传图片失败")
     proxy.$refs.imageUpload.handleRemove(file)
     uploadedSuccessfully()
   }
@@ -187,7 +192,7 @@ function handleUploadSuccess(res, file) {
 // 删除图片
 function handleDelete(file) {
   const findex = fileList.value.map(f => f.name).indexOf(file.name)
-  if (findex > -1 && uploadList.value.length === number.value) {
+  if (findex > -1) {
     fileList.value.splice(findex, 1)
     emit("update:modelValue", listToString(fileList.value))
     return false
@@ -196,20 +201,39 @@ function handleDelete(file) {
 
 // 上传结束处理
 function uploadedSuccessfully() {
-  if (number.value > 0 && uploadList.value.length === number.value) {
-    fileList.value = fileList.value.filter(f => f.url !== undefined).concat(uploadList.value)
-    uploadList.value = []
-    number.value = 0
-    emit("update:modelValue", listToString(fileList.value))
+  if (pendingUploads.size === 0) {
+    if (uploadList.value.length) {
+      fileList.value = fileList.value.filter(f => f.url !== undefined).concat(uploadList.value)
+      uploadList.value = []
+      emit("update:modelValue", listToString(fileList.value))
+    }
+    emit("busy", false)
     proxy.$modal.closeLoading()
   }
 }
 
 // 上传失败
-function handleUploadError() {
+function handleUploadError(err, file) {
+  if (!pendingUploads.delete(file.uid)) return
   proxy.$modal.msgError("上传图片失败")
-  proxy.$modal.closeLoading()
+  uploadedSuccessfully()
 }
+
+// 删除/取消上传与网络失败都要结束该文件；迟到的成功回调不能再把它写回表单。
+function handleUploadRemove(file) {
+  pendingUploads.delete(file.uid)
+  uploadList.value = uploadList.value.filter(item => item.uid !== file.uid)
+  uploadedSuccessfully()
+}
+
+onBeforeUnmount(() => {
+  const busy = pendingUploads.size > 0
+  pendingUploads.clear()
+  uploadList.value = []
+  proxy.$refs.imageUpload?.abort()
+  emit("busy", false)
+  if (busy) proxy.$modal.closeLoading()
+})
 
 // 预览
 function handlePictureCardPreview(file) {
@@ -223,7 +247,7 @@ function listToString(list, separator) {
   separator = separator || ","
   for (let i in list) {
     if (undefined !== list[i].url && list[i].url.indexOf("blob:") !== 0) {
-      strs += list[i].url.replace(baseUrl, "") + separator
+      strs += imagePath(list[i].url).replace(baseUrl, "") + separator
     }
   }
   return strs != "" ? strs.substr(0, strs.length - 1) : ""

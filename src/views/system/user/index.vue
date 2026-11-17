@@ -78,8 +78,9 @@
                   <span>{{ parseTime(scope.row.createTime) }}</span>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+              <el-table-column label="操作" align="center" width="230" class-name="small-padding fixed-width">
                 <template #default="scope">
+                  <el-button v-if="currentUser.id === 1 && scope.row.userId !== 1" link type="primary" @click="cityScopeRef.openFor(scope.row)">城市授权</el-button>
                   <el-tooltip content="修改" placement="top" v-if="scope.row.userId !== 1">
                     <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['system:user:edit']"></el-button>
                   </el-tooltip>
@@ -101,6 +102,7 @@
       </splitpanes>
     </el-row>
 
+    <AdminCityScope ref="cityScopeRef" />
     <!-- 添加或修改用户配置对话框 -->
     <el-dialog :title="title" v-model="open" width="600px" append-to-body>
       <el-form :model="form" :rules="rules" ref="userRef" label-width="80px">
@@ -131,7 +133,7 @@
         <el-row>
           <el-col :span="12">
             <el-form-item v-if="form.userId == undefined" label="用户名称" prop="userName">
-              <el-input v-model="form.userName" placeholder="请输入用户名称" maxlength="30" />
+              <el-input v-model="form.userName" placeholder="请输入用户名称" maxlength="20" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -214,6 +216,11 @@
 </template>
 
 <script setup name="User">
+import AdminCityScope from './AdminCityScope.vue'
+import useUserStore from '@/store/modules/user'
+const currentUser = useUserStore()
+const cityScopeRef = ref()
+
 import { getToken } from "@/utils/auth"
 import useAppStore from '@/store/modules/app'
 import { changeUserStatus, listUser, resetUserPwd, delUser, getUser, updateUser, addUser, deptTreeSelect } from "@/api/system/user"
@@ -228,7 +235,7 @@ const { sys_normal_disable, sys_user_sex } = proxy.useDict("sys_normal_disable",
 const userList = ref([])
 const open = ref(false)
 const loading = ref(true)
-const showSearch = ref(true)
+const showSearch = ref(window.innerWidth > 768)  // 手机上搜索栏先收起，点右边放大镜再展开
 const ids = ref([])
 const single = ref(true)
 const multiple = ref(true)

@@ -101,7 +101,7 @@ const { sys_normal_disable } = proxy.useDict("sys_normal_disable")
 
 const userList = ref([])
 const loading = ref(true)
-const showSearch = ref(true)
+const showSearch = ref(window.innerWidth > 768)  // 手机上搜索栏先收起，点右边放大镜再展开
 const multiple = ref(true)
 const total = ref(0)
 const userIds = ref([])

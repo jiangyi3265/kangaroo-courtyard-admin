@@ -8,6 +8,7 @@
       :data="data"
       :limit="limit"
       :on-error="handleUploadError"
+      :on-remove="handleUploadRemove"
       :on-exceed="handleExceed"
       :on-success="handleUploadSuccess"
       :show-file-list="false"
@@ -89,7 +90,7 @@ const props = defineProps({
 
 const { proxy } = getCurrentInstance()
 const emit = defineEmits()
-const number = ref(0)
+const pendingUploads = new Set()
 const uploadList = ref([])
 const baseUrl = import.meta.env.VITE_APP_BASE_API
 const uploadFileUrl = ref(import.meta.env.VITE_APP_BASE_API + props.action) // 上传文件服务器地址
@@ -144,7 +145,8 @@ function handleBeforeUpload(file) {
     }
   }
   proxy.$modal.loading("正在上传文件，请稍候...")
-  number.value++
+  pendingUploads.add(file.uid)
+  emit("busy", true)
   return true
 }
 
@@ -154,20 +156,20 @@ function handleExceed() {
 }
 
 // 上传失败
-function handleUploadError(err) {
+function handleUploadError(err, file) {
+  if (!pendingUploads.delete(file.uid)) return
   proxy.$modal.msgError("上传文件失败")
-  proxy.$modal.closeLoading()
+  uploadedSuccessfully()
 }
 
 // 上传成功回调
 function handleUploadSuccess(res, file) {
-  if (res.code === 200) {
-    uploadList.value.push({ name: res.fileName, url: res.fileName })
+  if (!pendingUploads.delete(file.uid)) return
+  if (res.code === 200 && res.fileName) {
+    uploadList.value.push({ uid: file.uid, name: res.fileName, url: res.fileName })
     uploadedSuccessfully()
   } else {
-    number.value--
-    proxy.$modal.closeLoading()
-    proxy.$modal.msgError(res.msg)
+    proxy.$modal.msgError(res.msg || "上传文件失败")
     proxy.$refs.fileUpload.handleRemove(file)
     uploadedSuccessfully()
   }
@@ -181,14 +183,31 @@ function handleDelete(index) {
 
 // 上传结束处理
 function uploadedSuccessfully() {
-  if (number.value > 0 && uploadList.value.length === number.value) {
-    fileList.value = fileList.value.filter(f => f.url !== undefined).concat(uploadList.value)
-    uploadList.value = []
-    number.value = 0
-    emit("update:modelValue", listToString(fileList.value))
+  if (pendingUploads.size === 0) {
+    if (uploadList.value.length) {
+      fileList.value = fileList.value.filter(f => f.url !== undefined).concat(uploadList.value)
+      uploadList.value = []
+      emit("update:modelValue", listToString(fileList.value))
+    }
+    emit("busy", false)
     proxy.$modal.closeLoading()
   }
 }
+
+function handleUploadRemove(file) {
+  pendingUploads.delete(file.uid)
+  uploadList.value = uploadList.value.filter(item => item.uid !== file.uid)
+  uploadedSuccessfully()
+}
+
+onBeforeUnmount(() => {
+  const busy = pendingUploads.size > 0
+  pendingUploads.clear()
+  uploadList.value = []
+  proxy.$refs.fileUpload?.abort()
+  emit("busy", false)
+  if (busy) proxy.$modal.closeLoading()
+})
 
 // 获取文件名称
 function getFileName(name) {

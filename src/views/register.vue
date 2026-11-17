@@ -176,6 +176,7 @@ getCode()
   border-radius: 6px;
   background: #ffffff;
   width: 400px;
+  max-width: calc(100vw - 32px);
   padding: 25px 25px 5px 25px;
   .el-input {
     height: 40px;

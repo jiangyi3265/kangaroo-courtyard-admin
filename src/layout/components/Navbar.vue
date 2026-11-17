@@ -2,6 +2,8 @@
   <div class="navbar" :class="'nav' + settingsStore.navType">
     <hamburger id="hamburger-container" :is-active="appStore.sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
     <breadcrumb v-if="settingsStore.navType == 1" id="breadcrumb-container" class="breadcrumb-container" />
+    <!-- 手机上面包屑收起（见 mobile.scss），这里只显示当前页名，顶栏不会挤出屏幕 -->
+    <span v-if="settingsStore.navType == 1 && appStore.device === 'mobile'" class="navbar-mobile-title">{{ route.meta.title }}</span>
     <top-nav v-if="settingsStore.navType == 2" id="topmenu-container" class="topmenu-container" />
     <template v-if="settingsStore.navType == 3">
       <logo v-show="settingsStore.sidebarLogo" :collapse="false"></logo>
@@ -9,6 +11,7 @@
     </template>
 
     <div class="right-menu">
+      <merchant-request-bell />
       <template v-if="appStore.device !== 'mobile'">
         <el-tooltip content="主题模式" effect="dark" placement="bottom">
           <div class="right-menu-item hover-effect theme-switch-wrapper" @click="toggleTheme">
@@ -49,6 +52,7 @@ import { ElMessageBox } from 'element-plus'
 import Breadcrumb from '@/components/Breadcrumb'
 import TopNav from '@/components/TopNav'
 import TopBar from './TopBar'
+import MerchantRequestBell from './MerchantRequestBell.vue'
 import Logo from './Sidebar/Logo'
 import Hamburger from '@/components/Hamburger'
 import useAppStore from '@/store/modules/app'
@@ -56,6 +60,7 @@ import useUserStore from '@/store/modules/user'
 import useSettingsStore from '@/store/modules/settings'
 
 const appStore = useAppStore()
+const route = useRoute()
 const userStore = useUserStore()
 const settingsStore = useSettingsStore()
 
@@ -83,7 +88,7 @@ function logout() {
     type: 'warning'
   }).then(() => {
     userStore.logOut().then(() => {
-      location.href = '/index'
+      location.href = import.meta.env.BASE_URL + 'index'
     })
   }).catch(() => { })
 }
@@ -170,6 +175,24 @@ async function toggleTheme(event) {
 
   .breadcrumb-container {
     flex-shrink: 0;
+  }
+
+  .navbar-mobile-title {
+    display: none;
+    flex: 1;
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--navbar-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    .navbar-mobile-title {
+      display: block;
+    }
   }
 
   .topmenu-container {
