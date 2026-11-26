@@ -159,6 +159,7 @@ const { kg_msg_category } = proxy.useDict("kg_msg_category")
 
 const messageList = ref([])
 const open = ref(false)
+let listRequest = 0
 const loading = ref(true)
 const showSearch = ref(window.innerWidth > 768)  // 手机上搜索栏先收起，点右边放大镜再展开
 const total = ref(0)
@@ -203,11 +204,14 @@ function onRecipientIdInput(value) {
 
 /** 查询站内消息列表 */
 function getList() {
+  const request = ++listRequest
   loading.value = true
   listMessage(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
+    if (request !== listRequest) return
     messageList.value = response.rows
     total.value = response.total
   }).catch(() => {
+    if (request !== listRequest) return
     // 查询失败必须把上一次的结果清掉：留着旧的 10 行和旧的 total，
     // 运营会把它当成本次查询的结果，比什么都不显示危险得多。
     // 具体错误 request.js 已经弹过了，这里不再重复提示。
@@ -215,7 +219,7 @@ function getList() {
     total.value = 0
   }).finally(() => {
     // loading 收敛在 finally：无论成功、失败还是以后新增分支，遮罩都一定会关
-    loading.value = false
+    if (request === listRequest) loading.value = false
   })
 }
 

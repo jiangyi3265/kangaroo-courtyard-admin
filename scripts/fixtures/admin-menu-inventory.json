@@ -1,0 +1,912 @@
+[
+ {
+  "menuId": 100,
+  "oldGroup": "系统管理",
+  "name": "用户管理",
+  "path": "/system/user",
+  "component": "system/user/index",
+  "perms": "system:user:list",
+  "hidden": false
+ },
+ {
+  "menuId": 101,
+  "oldGroup": "系统管理",
+  "name": "角色管理",
+  "path": "/system/role",
+  "component": "system/role/index",
+  "perms": "system:role:list",
+  "hidden": false
+ },
+ {
+  "menuId": 102,
+  "oldGroup": "系统管理",
+  "name": "菜单管理",
+  "path": "/system/menu",
+  "component": "system/menu/index",
+  "perms": "system:menu:list",
+  "hidden": false
+ },
+ {
+  "menuId": 103,
+  "oldGroup": "系统管理",
+  "name": "部门管理",
+  "path": "/system/dept",
+  "component": "system/dept/index",
+  "perms": "system:dept:list",
+  "hidden": false
+ },
+ {
+  "menuId": 104,
+  "oldGroup": "系统管理",
+  "name": "岗位管理",
+  "path": "/system/post",
+  "component": "system/post/index",
+  "perms": "system:post:list",
+  "hidden": false
+ },
+ {
+  "menuId": 105,
+  "oldGroup": "系统管理",
+  "name": "字典管理",
+  "path": "/system/dict",
+  "component": "system/dict/index",
+  "perms": "system:dict:list",
+  "hidden": false
+ },
+ {
+  "menuId": 106,
+  "oldGroup": "系统管理",
+  "name": "参数设置",
+  "path": "/system/config",
+  "component": "system/config/index",
+  "perms": "system:config:list",
+  "hidden": false
+ },
+ {
+  "menuId": 107,
+  "oldGroup": "系统管理",
+  "name": "通知公告",
+  "path": "/system/notice",
+  "component": "system/notice/index",
+  "perms": "system:notice:list",
+  "hidden": false
+ },
+ {
+  "menuId": 109,
+  "oldGroup": "系统监控",
+  "name": "在线用户",
+  "path": "/monitor/online",
+  "component": "monitor/online/index",
+  "perms": "monitor:online:list",
+  "hidden": false
+ },
+ {
+  "menuId": 111,
+  "oldGroup": "系统监控",
+  "name": "数据监控",
+  "path": "/monitor/druid",
+  "component": "monitor/druid/index",
+  "perms": "monitor:druid:list",
+  "hidden": true
+ },
+ {
+  "menuId": 112,
+  "oldGroup": "系统监控",
+  "name": "服务监控",
+  "path": "/monitor/server",
+  "component": "monitor/server/index",
+  "perms": "monitor:server:list",
+  "hidden": false
+ },
+ {
+  "menuId": 113,
+  "oldGroup": "系统监控",
+  "name": "缓存监控",
+  "path": "/monitor/cache",
+  "component": "monitor/cache/index",
+  "perms": "monitor:cache:list",
+  "hidden": false
+ },
+ {
+  "menuId": 114,
+  "oldGroup": "系统监控",
+  "name": "缓存列表",
+  "path": "/monitor/cacheList",
+  "component": "monitor/cache/list",
+  "perms": "monitor:cache:list",
+  "hidden": false
+ },
+ {
+  "menuId": 500,
+  "oldGroup": "系统管理",
+  "name": "操作日志",
+  "path": "/system/log/operlog",
+  "component": "monitor/operlog/index",
+  "perms": "monitor:operlog:list",
+  "hidden": false
+ },
+ {
+  "menuId": 501,
+  "oldGroup": "系统管理",
+  "name": "登录日志",
+  "path": "/system/log/logininfor",
+  "component": "monitor/logininfor/index",
+  "perms": "monitor:logininfor:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2001,
+  "oldGroup": "袋鼠任务",
+  "name": "数据看板",
+  "path": "/kangaroo/dashboard",
+  "component": "kangaroo/dashboard/index",
+  "perms": "kangaroo:dashboard:view",
+  "hidden": false
+ },
+ {
+  "menuId": 2010,
+  "oldGroup": "袋鼠任务",
+  "name": "小程序账号",
+  "path": "/kangaroo/appuser",
+  "component": "kangaroo/appuser/index",
+  "perms": "kangaroo:appuser:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2020,
+  "oldGroup": "袋鼠任务",
+  "name": "门店管理",
+  "path": "/kangaroo/store",
+  "component": "kangaroo/store/index",
+  "perms": "kangaroo:store:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2030,
+  "oldGroup": "袋鼠任务",
+  "name": "员工授权",
+  "path": "/kangaroo/grant",
+  "component": "kangaroo/grant/index",
+  "perms": "kangaroo:grant:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2040,
+  "oldGroup": "袋鼠任务",
+  "name": "岗位管理",
+  "path": "/kangaroo/job",
+  "component": "kangaroo/job/index",
+  "perms": "kangaroo:job:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2380,
+  "oldGroup": "袋鼠任务",
+  "name": "岗位要求选项",
+  "path": "/kangaroo/jobopt",
+  "component": "kangaroo/ext/jobopt/index",
+  "perms": "kangaroo:jobopt:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2050,
+  "oldGroup": "袋鼠任务",
+  "name": "报名管理",
+  "path": "/kangaroo/application",
+  "component": "kangaroo/application/index",
+  "perms": "kangaroo:application:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2060,
+  "oldGroup": "袋鼠任务",
+  "name": "面试时段",
+  "path": "/kangaroo/slot",
+  "component": "kangaroo/slot/index",
+  "perms": "kangaroo:slot:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2070,
+  "oldGroup": "袋鼠任务",
+  "name": "站内消息",
+  "path": "/kangaroo/message",
+  "component": "kangaroo/message/index",
+  "perms": "kangaroo:message:list",
+  "hidden": false
+ },
+ {
+  "menuId": 3210,
+  "oldGroup": "袋鼠任务",
+  "name": "员工任务派发",
+  "path": "/kangaroo/stafftask",
+  "component": "kangaroo/stafftask/index",
+  "perms": "kangaroo:stafftask:list",
+  "hidden": false
+ },
+ {
+  "menuId": 3985,
+  "oldGroup": "袋鼠任务",
+  "name": "心愿互助",
+  "path": "/kangaroo/wishes",
+  "component": "kangaroo/wishes/index",
+  "perms": "kangaroo:wish:list",
+  "hidden": false
+ },
+ {
+  "menuId": 3987,
+  "oldGroup": "袋鼠任务",
+  "name": "谁是卧底管理",
+  "path": "/kangaroo/undercover",
+  "component": "kangaroo/undercover/index",
+  "perms": "kangaroo:undercover:list",
+  "hidden": false
+ },
+ {
+  "menuId": 3974,
+  "oldGroup": "袋鼠任务",
+  "name": "调解与徽章",
+  "path": "/kangaroo/governance",
+  "component": "kangaroo/governance/index",
+  "perms": "kangaroo:mediation:query",
+  "hidden": false
+ },
+ {
+  "menuId": 3976,
+  "oldGroup": "袋鼠任务",
+  "name": "商家分成结算",
+  "path": "/kangaroo/merchantFinance",
+  "component": "kangaroo/governance/Finance",
+  "perms": "kangaroo:merchantfinance:query",
+  "hidden": false
+ },
+ {
+  "menuId": 3978,
+  "oldGroup": "袋鼠任务",
+  "name": "通知送达记录",
+  "path": "/kangaroo/deliveries",
+  "component": "kangaroo/governance/Deliveries",
+  "perms": "kangaroo:delivery:query",
+  "hidden": false
+ },
+ {
+  "menuId": 3979,
+  "oldGroup": "袋鼠任务",
+  "name": "订单分账与招聘费用",
+  "path": "/kangaroo/business-settlement",
+  "component": "kangaroo/settlement/index",
+  "perms": "kangaroo:businessbill:query",
+  "hidden": false
+ },
+ {
+  "menuId": 3981,
+  "oldGroup": "袋鼠任务",
+  "name": "积分商品与兑换",
+  "path": "/kangaroo/point-mall",
+  "component": "kangaroo/point-mall/index",
+  "perms": "kangaroo:pointmall:query",
+  "hidden": false
+ },
+ {
+  "menuId": 3983,
+  "oldGroup": "袋鼠任务",
+  "name": "商家任务发布费用",
+  "path": "/kangaroo/publication-fees",
+  "component": "kangaroo/publication-fees/index",
+  "perms": "kangaroo:publicationfee:query",
+  "hidden": false
+ },
+ {
+  "menuId": 3900,
+  "oldGroup": "袋鼠任务",
+  "name": "首页内容管理",
+  "path": "/kangaroo/homepick",
+  "component": "kangaroo/ext/homepick/index",
+  "perms": "kangaroo:homepick:list",
+  "hidden": false
+ },
+ {
+  "menuId": 3920,
+  "oldGroup": "袋鼠任务",
+  "name": "会员等级设置",
+  "path": "/kangaroo/memberlevel",
+  "component": "kangaroo/ext/memberlevel/index",
+  "perms": "kangaroo:memberlevel:list",
+  "hidden": false
+ },
+ {
+  "menuId": 3940,
+  "oldGroup": "袋鼠任务",
+  "name": "会员店铺权益",
+  "path": "/kangaroo/memberbenefit",
+  "component": "kangaroo/ext/memberbenefit/index",
+  "perms": "kangaroo:memberbenefit:list",
+  "hidden": false
+ },
+ {
+  "menuId": 3960,
+  "oldGroup": "袋鼠任务",
+  "name": "商家入驻申请",
+  "path": "/kangaroo/merchantapply",
+  "component": "kangaroo/ext/merchantapply/index",
+  "perms": "kangaroo:merchantapply:list",
+  "hidden": false
+ },
+ {
+  "menuId": 3963,
+  "oldGroup": "袋鼠任务",
+  "name": "商家需求",
+  "path": "/kangaroo/merchantrequest",
+  "component": "kangaroo/ext/merchantrequest/index",
+  "perms": "kangaroo:merchantrequest:list",
+  "hidden": false
+ },
+ {
+  "menuId": 3970,
+  "oldGroup": "袋鼠任务",
+  "name": "角色切换",
+  "path": "/kangaroo/roleswitch",
+  "component": "kangaroo/roleswitch/index",
+  "perms": "kangaroo:roleswitch:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2110,
+  "oldGroup": "交易与内容",
+  "name": "支付单",
+  "path": "/kgtrade/payorder",
+  "component": "kangaroo/ext/payorder/index",
+  "perms": "kangaroo:payorder:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2120,
+  "oldGroup": "交易与内容",
+  "name": "评价管理",
+  "path": "/kgtrade/review",
+  "component": "kangaroo/ext/review/index",
+  "perms": "kangaroo:review:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2130,
+  "oldGroup": "交易与内容",
+  "name": "举报处理",
+  "path": "/kgtrade/report",
+  "component": "kangaroo/ext/report/index",
+  "perms": "kangaroo:report:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2210,
+  "oldGroup": "旅居",
+  "name": "房源管理",
+  "path": "/kgstays/stay",
+  "component": "kangaroo/ext/stay/index",
+  "perms": "kangaroo:stay:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2220,
+  "oldGroup": "旅居",
+  "name": "房型管理",
+  "path": "/kgstays/roomtype",
+  "component": "kangaroo/ext/roomtype/index",
+  "perms": "kangaroo:roomtype:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2230,
+  "oldGroup": "旅居",
+  "name": "房态价格",
+  "path": "/kgstays/staycal",
+  "component": "kangaroo/ext/staycal/index",
+  "perms": "kangaroo:staycal:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2240,
+  "oldGroup": "旅居",
+  "name": "早鸟特价",
+  "path": "/kgstays/staypromo",
+  "component": "kangaroo/ext/staypromo/index",
+  "perms": "kangaroo:staypromo:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2250,
+  "oldGroup": "旅居",
+  "name": "旅居订单",
+  "path": "/kgstays/stayorder",
+  "component": "kangaroo/ext/stayorder/index",
+  "perms": "kangaroo:stayorder:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2260,
+  "oldGroup": "旅居",
+  "name": "增值服务",
+  "path": "/kgstays/shopservice",
+  "component": "kangaroo/ext/shopservice/index",
+  "perms": "kangaroo:shopservice:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2270,
+  "oldGroup": "旅居",
+  "name": "服务订单",
+  "path": "/kgstays/shoporder",
+  "component": "kangaroo/ext/shoporder/index",
+  "perms": "kangaroo:shoporder:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2280,
+  "oldGroup": "旅居",
+  "name": "Vlog 审核",
+  "path": "/kgstays/stayvlog",
+  "component": "kangaroo/ext/stayvlog/index",
+  "perms": "kangaroo:stayvlog:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2290,
+  "oldGroup": "旅居",
+  "name": "房源资质",
+  "path": "/kgstays/stayqual",
+  "component": "kangaroo/ext/stayqual/index",
+  "perms": "kangaroo:stayqual:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2295,
+  "oldGroup": "旅居",
+  "name": "生活碎片",
+  "path": "/kgstays/staydiary",
+  "component": "kangaroo/ext/staydiary/index",
+  "perms": "kangaroo:staydiary:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2285,
+  "oldGroup": "旅居",
+  "name": "小院评论审核",
+  "path": "/kgstays/staycomment",
+  "component": "kangaroo/ext/staycomment/index",
+  "perms": "kangaroo:staycomment:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2288,
+  "oldGroup": "旅居",
+  "name": "采购报销",
+  "path": "/kgstays/reimburse",
+  "component": "kangaroo/reimburse/index",
+  "perms": "kangaroo:reimburse:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2310,
+  "oldGroup": "社区",
+  "name": "社区动态",
+  "path": "/kgcommunity/post",
+  "component": "kangaroo/ext/post/index",
+  "perms": "kangaroo:post:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2320,
+  "oldGroup": "社区",
+  "name": "动态评论",
+  "path": "/kgcommunity/postcomment",
+  "component": "kangaroo/ext/postcomment/index",
+  "perms": "kangaroo:postcomment:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2330,
+  "oldGroup": "社区",
+  "name": "社区活动",
+  "path": "/kgcommunity/activity",
+  "component": "kangaroo/ext/activity/index",
+  "perms": "kangaroo:activity:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2340,
+  "oldGroup": "社区",
+  "name": "活动报名",
+  "path": "/kgcommunity/actsignup",
+  "component": "kangaroo/ext/actsignup/index",
+  "perms": "kangaroo:actsignup:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2350,
+  "oldGroup": "社区",
+  "name": "公开行程",
+  "path": "/kgcommunity/tripplan",
+  "component": "kangaroo/ext/tripplan/index",
+  "perms": "kangaroo:tripplan:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2360,
+  "oldGroup": "社区",
+  "name": "私信群聊",
+  "path": "/kgcommunity/chatconv",
+  "component": "kangaroo/ext/chatconv/index",
+  "perms": "kangaroo:chatconv:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2370,
+  "oldGroup": "社区",
+  "name": "敏感词库",
+  "path": "/kgcommunity/sensword",
+  "component": "kangaroo/ext/sensword/index",
+  "perms": "kangaroo:sensword:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2410,
+  "oldGroup": "用户服务",
+  "name": "城市字典",
+  "path": "/kgusersvc/city",
+  "component": "kangaroo/ext/city/index",
+  "perms": "kangaroo:city:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2420,
+  "oldGroup": "用户服务",
+  "name": "客服工单",
+  "path": "/kgusersvc/ticket",
+  "component": "kangaroo/ext/ticket/index",
+  "perms": "kangaroo:ticket:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2425,
+  "oldGroup": "用户服务",
+  "name": "AI客服聊天记录",
+  "path": "/kgusersvc/supportchat",
+  "component": "kangaroo/ext/supportchat/index",
+  "perms": "kangaroo:supportchat:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2430,
+  "oldGroup": "用户服务",
+  "name": "新机会订阅",
+  "path": "/kgusersvc/jobsub",
+  "component": "kangaroo/ext/jobsub/index",
+  "perms": "kangaroo:jobsub:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2440,
+  "oldGroup": "用户服务",
+  "name": "技能证书",
+  "path": "/kgusersvc/cert",
+  "component": "kangaroo/ext/cert/index",
+  "perms": "kangaroo:cert:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2450,
+  "oldGroup": "用户服务",
+  "name": "责任书签署",
+  "path": "/kgusersvc/contractsign",
+  "component": "kangaroo/ext/contractsign/index",
+  "perms": "kangaroo:contractsign:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2460,
+  "oldGroup": "用户服务",
+  "name": "到店信息",
+  "path": "/kgusersvc/arrival",
+  "component": "kangaroo/ext/arrival/index",
+  "perms": "kangaroo:arrival:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2470,
+  "oldGroup": "用户服务",
+  "name": "体验官申请",
+  "path": "/kgusersvc/guideapply",
+  "component": "kangaroo/ext/guideapply/index",
+  "perms": "kangaroo:guideapply:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2650,
+  "oldGroup": "用户服务",
+  "name": "账号注销记录",
+  "path": "/kgusersvc/accountdel",
+  "component": "kangaroo/ext/accountdel/index",
+  "perms": "kangaroo:accountdel:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2670,
+  "oldGroup": "用户服务",
+  "name": "订阅消息模板",
+  "path": "/kgusersvc/substpl",
+  "component": "kangaroo/ext/substpl/index",
+  "perms": "kangaroo:substpl:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2680,
+  "oldGroup": "用户服务",
+  "name": "订阅发送记录",
+  "path": "/kgusersvc/sublog",
+  "component": "kangaroo/ext/sublog/index",
+  "perms": "kangaroo:sublog:list",
+  "hidden": false
+ },
+ {
+  "menuId": 3000,
+  "oldGroup": "用户服务",
+  "name": "常见问题",
+  "path": "/kgusersvc/faq",
+  "component": "kangaroo/ext/faq/index",
+  "perms": "kangaroo:faq:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2480,
+  "oldGroup": "用户服务",
+  "name": "小程序公告",
+  "path": "/kgusersvc/appnotice",
+  "component": "kangaroo/ext/appnotice/index",
+  "perms": "kangaroo:appnotice:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2510,
+  "oldGroup": "经营管理",
+  "name": "周报",
+  "path": "/kgmanage/weeklyreport",
+  "component": "kangaroo/ext/weeklyreport/index",
+  "perms": "kangaroo:weeklyreport:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2520,
+  "oldGroup": "经营管理",
+  "name": "日报明细",
+  "path": "/kgmanage/dailyentry",
+  "component": "kangaroo/ext/dailyentry/index",
+  "perms": "kangaroo:dailyentry:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2530,
+  "oldGroup": "经营管理",
+  "name": "门店任务",
+  "path": "/kgmanage/task",
+  "component": "kangaroo/ext/task/index",
+  "perms": "kangaroo:task:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2535,
+  "oldGroup": "经营管理",
+  "name": "任务执行记录",
+  "path": "/kgmanage/taskassignee",
+  "component": "kangaroo/ext/taskassignee/index",
+  "perms": "kangaroo:taskassignee:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2540,
+  "oldGroup": "经营管理",
+  "name": "分佣规则",
+  "path": "/kgmanage/commission",
+  "component": "kangaroo/ext/commission/index",
+  "perms": "kangaroo:commission:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2550,
+  "oldGroup": "经营管理",
+  "name": "钱包流水",
+  "path": "/kgmanage/walletentry",
+  "component": "kangaroo/ext/walletentry/index",
+  "perms": "kangaroo:walletentry:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2555,
+  "oldGroup": "经营管理",
+  "name": "收款账户",
+  "path": "/kgmanage/payee",
+  "component": "kangaroo/ext/payee/index",
+  "perms": "kangaroo:payee:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2560,
+  "oldGroup": "经营管理",
+  "name": "结算申请",
+  "path": "/kgmanage/withdraw",
+  "component": "kangaroo/ext/withdraw/index",
+  "perms": "kangaroo:withdraw:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2570,
+  "oldGroup": "经营管理",
+  "name": "荣誉定义",
+  "path": "/kgmanage/honordef",
+  "component": "kangaroo/ext/honordef/index",
+  "perms": "kangaroo:honordef:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2575,
+  "oldGroup": "经营管理",
+  "name": "荣誉授予",
+  "path": "/kgmanage/honoraward",
+  "component": "kangaroo/ext/honoraward/index",
+  "perms": "kangaroo:honoraward:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2580,
+  "oldGroup": "经营管理",
+  "name": "成长里程碑",
+  "path": "/kgmanage/milestone",
+  "component": "kangaroo/ext/milestone/index",
+  "perms": "kangaroo:milestone:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2585,
+  "oldGroup": "经营管理",
+  "name": "生日礼物",
+  "path": "/kgmanage/giftoption",
+  "component": "kangaroo/ext/giftoption/index",
+  "perms": "kangaroo:giftoption:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2590,
+  "oldGroup": "经营管理",
+  "name": "礼物领取",
+  "path": "/kgmanage/giftclaim",
+  "component": "kangaroo/ext/giftclaim/index",
+  "perms": "kangaroo:giftclaim:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2595,
+  "oldGroup": "经营管理",
+  "name": "申报处理",
+  "path": "/kgmanage/appeal",
+  "component": "kangaroo/ext/appeal/index",
+  "perms": "kangaroo:appeal:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2960,
+  "oldGroup": "门店运营扩展",
+  "name": "线上任务审核",
+  "path": "/kgstaffext/onlinereview",
+  "component": "kangaroo/ext/onlinereview/index",
+  "perms": "kangaroo:application:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2610,
+  "oldGroup": "门店运营扩展",
+  "name": "线上任务",
+  "path": "/kgstaffext/onlinetask",
+  "component": "kangaroo/ext/onlinetask/index",
+  "perms": "kangaroo:onlinetask:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2970,
+  "oldGroup": "门店运营扩展",
+  "name": "换工审核",
+  "path": "/kgstaffext/volunteerreview",
+  "component": "kangaroo/ext/volunteerreview/index",
+  "perms": "kangaroo:application:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2620,
+  "oldGroup": "门店运营扩展",
+  "name": "成果提交",
+  "path": "/kgstaffext/onlinesubmit",
+  "component": "kangaroo/ext/onlinesubmit/index",
+  "perms": "kangaroo:onlinesubmit:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2630,
+  "oldGroup": "门店运营扩展",
+  "name": "线下结算",
+  "path": "/kgstaffext/onlinesettle",
+  "component": "kangaroo/ext/onlinesettle/index",
+  "perms": "kangaroo:onlinesettle:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2640,
+  "oldGroup": "门店运营扩展",
+  "name": "人才邀请",
+  "path": "/kgstaffext/talentinvite",
+  "component": "kangaroo/ext/talentinvite/index",
+  "perms": "kangaroo:talentinvite:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2660,
+  "oldGroup": "门店运营扩展",
+  "name": "简历转发记录",
+  "path": "/kgstaffext/resumeforward",
+  "component": "kangaroo/ext/resumeforward/index",
+  "perms": "kangaroo:resumeforward:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2710,
+  "oldGroup": "员工运营",
+  "name": "保险方案",
+  "path": "/kgstaff/insplan",
+  "component": "kangaroo/ext/insplan/index",
+  "perms": "kangaroo:insplan:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2720,
+  "oldGroup": "员工运营",
+  "name": "投保申请",
+  "path": "/kgstaff/insapply",
+  "component": "kangaroo/ext/insapply/index",
+  "perms": "kangaroo:insapply:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2730,
+  "oldGroup": "员工运营",
+  "name": "调度日志",
+  "path": "/kgstaff/dispatch",
+  "component": "kangaroo/ext/dispatch/index",
+  "perms": "kangaroo:dispatch:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2740,
+  "oldGroup": "员工运营",
+  "name": "分享追踪",
+  "path": "/kgstaff/jobshare",
+  "component": "kangaroo/ext/jobshare/index",
+  "perms": "kangaroo:jobshare:list",
+  "hidden": false
+ },
+ {
+  "menuId": 2750,
+  "oldGroup": "员工运营",
+  "name": "员工操作日志",
+  "path": "/kgstaff/staffop",
+  "component": "kangaroo/ext/staffop/index",
+  "perms": "kangaroo:staffop:list",
+  "hidden": false
+ },
+ {
+  "menuId": null,
+  "oldGroup": "袋鼠任务",
+  "name": "日报与月度任务",
+  "path": "/kangaroo/operations-reports",
+  "component": "kangaroo/operations/index",
+  "perms": "kangaroo:operations:query",
+  "hidden": false,
+  "note": "V105 加的，本机库没有"
+ }
+]

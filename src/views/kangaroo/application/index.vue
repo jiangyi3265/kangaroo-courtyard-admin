@@ -178,6 +178,9 @@
                   @click="handleOnboard(scope.row)"
                   v-hasPermi="['kangaroo:application:confirm']"
                >标记入职</el-button>
+               <el-button v-if="scope.row.status === 'onboarded' && !scope.row.workEndTime && scope.row.jobType !== 'online'"
+                  link type="warning" @click="handleEndWork(scope.row)" v-hasPermi="['kangaroo:application:terminate']">结束工作</el-button>
+               <span v-if="scope.row.workEndTime">工作已结束</span>
                <el-button
                   v-if="canDo(scope.row, 'terminate')"
                   link
@@ -279,6 +282,7 @@ import {
   auditApplication,
   confirmApplication,
   onboardApplication,
+  finishApplicationWork,
   terminateApplication,
   listStoreOptions,
   listJobOptions
@@ -291,6 +295,7 @@ const { kg_app_status } = proxy.useDict("kg_app_status")
 
 const applicationList = ref([])
 const open = ref(false)
+let listRequest = 0
 const loading = ref(true)
 const showSearch = ref(window.innerWidth > 768)  // 手机上搜索栏先收起，点右边放大镜再展开
 const total = ref(0)
@@ -433,11 +438,14 @@ function durationText(seconds) {
 
 /** 查询报名列表 */
 function getList() {
+  const request = ++listRequest
   loading.value = true
   listApplication(proxy.addDateRange({ ...queryParams.value, jobType: props.fixedJobType || undefined }, dateRange.value)).then(response => {
+    if (request !== listRequest) return
     applicationList.value = response.rows
     total.value = response.total
   }).catch(() => {
+    if (request !== listRequest) return
     // 查询失败必须把上一次的结果清掉：留着旧数据和旧 total，
     // 运营会把它当成本次查询的结果，还可能对着陈旧的行去点"通过/终止"。
     // 具体错误 request.js 已经弹过了。
@@ -445,7 +453,7 @@ function getList() {
     total.value = 0
   }).finally(() => {
     // loading 收敛在 finally：无论成功、失败还是以后新增分支，遮罩都一定会关
-    loading.value = false
+    if (request === listRequest) loading.value = false
   })
 }
 
@@ -560,6 +568,16 @@ function handleConfirm(row) {
 }
 
 /** 标记入职 */
+function handleEndWork(row) {
+  proxy.$modal.prompt('请填写结束这段工作的原因，将通知义工和门店。').then(({ value }) => {
+    if (!value?.trim()) { proxy.$modal.msgWarning('请填写原因'); return }
+    return finishApplicationWork(row.appId, value.trim()).then(() => {
+      proxy.$modal.msgSuccess('已结束工作')
+      getList()
+    })
+  }).catch(() => {})
+}
+
 function handleOnboard(row) {
   proxy.$modal.confirm('确认"' + row.realName + '"已到岗入职？标记后该报名进入终态，不可再流转。').then(function() {
     return onboardApplication(row.appId)

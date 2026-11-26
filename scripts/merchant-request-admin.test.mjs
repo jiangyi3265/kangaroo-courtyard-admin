@@ -395,7 +395,7 @@ test('铃铛只有有权限才显示和轮询，接口不走会弹错的 request
 })
 
 test('改过的页面模板都能编译', () => {
-  for (const rel of ['src/layout/components/MerchantRequestBell.vue', 'src/layout/components/Navbar.vue', 'src/views/kangaroo/ext/merchantrequest/index.vue', 'src/views/kangaroo/ext/merchantapply/index.vue', 'src/views/kangaroo/ext/ExtCrud.vue', 'src/views/kangaroo/ext/onlinesettle/index.vue', 'src/views/kangaroo/grant/index.vue', 'src/views/kangaroo/roleswitch/index.vue', 'src/views/kangaroo/job/index.vue', 'src/views/kangaroo/store/index.vue']) {
+  for (const rel of ['src/layout/components/HeadquartersPending.vue','src/views/kangaroo/ext/taskassignee/index.vue','src/views/kangaroo/ext/insapply/index.vue','src/layout/components/MerchantRequestBell.vue', 'src/layout/components/Navbar.vue', 'src/views/kangaroo/ext/merchantrequest/index.vue', 'src/views/kangaroo/ext/merchantapply/index.vue', 'src/views/kangaroo/ext/ExtCrud.vue', 'src/views/kangaroo/ext/onlinesettle/index.vue', 'src/views/kangaroo/grant/index.vue', 'src/views/kangaroo/roleswitch/index.vue', 'src/views/kangaroo/job/index.vue', 'src/views/kangaroo/store/index.vue']) {
     const { descriptor, errors } = parse(read(rel), { filename: rel })
     assert.deepEqual(errors, [], rel)
     const out = compileTemplate({ source: descriptor.template.content, filename: rel, id: 'x' })

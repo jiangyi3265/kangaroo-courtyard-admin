@@ -1,5 +1,5 @@
 import router from './router'
-import { ElMessage } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import { getToken } from '@/utils/auth'
@@ -17,7 +17,38 @@ const isWhiteList = (path) => {
   return whiteList.some(pattern => isPathMatch(pattern, path))
 }
 
-router.beforeEach((to, from, next) => {
+// 多个受保护的地址在首屏同时触发导航时，共用一次初始化和重试提示。
+let initializingRoutes
+
+async function initializeRoutes() {
+  const user = useUserStore()
+  isRelogin.show = true
+  try {
+    while (true) {
+      try {
+        await user.getInfo()
+        const routes = await usePermissionStore().generateRoutes()
+        routes.filter(route => !isHttp(route.path)).forEach(route => router.addRoute(route))
+        return true
+      } catch {
+        try {
+          await ElMessageBox.confirm('未能加载账号或菜单。可以重试，也可以返回登录。', '后台加载失败', {
+            confirmButtonText: '重试', cancelButtonText: '返回登录',
+            showClose: false, closeOnClickModal: false, closeOnPressEscape: false
+          })
+        } catch {
+          // 网络断开时也允许退出当前浏览器里的账号。
+          await user.logOut().catch(() => user.clearSession())
+          return false
+        }
+      }
+    }
+  } finally {
+    isRelogin.show = false
+  }
+}
+
+router.beforeEach(async (to, from, next) => {
   NProgress.start()
   if (getToken()) {
     to.meta.title && useSettingsStore().setTitle(to.meta.title)
@@ -28,26 +59,12 @@ router.beforeEach((to, from, next) => {
     } else if (isWhiteList(to.path)) {
       next()
     } else {
-      if (useUserStore().roles.length === 0) {
-        isRelogin.show = true
-        // 判断当前用户是否已拉取完user_info信息
-        useUserStore().getInfo().then(() => {
-          isRelogin.show = false
-          usePermissionStore().generateRoutes().then(accessRoutes => {
-            // 根据roles权限生成可访问的路由表
-            accessRoutes.forEach(route => {
-              if (!isHttp(route.path)) {
-                router.addRoute(route) // 动态添加可访问路由表
-              }
-            })
-            next({ ...to, replace: true }) // hack方法 确保addRoutes已完成
-          })
-        }).catch(err => {
-          useUserStore().logOut().then(() => {
-            ElMessage.error(err)
-            next({ path: '/' })
-          })
-        })
+      if (initializingRoutes || useUserStore().roles.length === 0) {
+        if (!initializingRoutes) {
+          initializingRoutes = initializeRoutes().finally(() => { initializingRoutes = undefined })
+        }
+        const ready = await initializingRoutes
+        next(ready ? { ...to, replace: true } : { path: '/login', query: { redirect: to.fullPath }, replace: true })
       } else {
         next()
       }

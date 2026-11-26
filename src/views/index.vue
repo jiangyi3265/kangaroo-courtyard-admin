@@ -1,11 +1,19 @@
 <template>
   <div class="app-container">
-    <social-switch v-if="canManageCommunity" feature="stay-booking" title="旅居住宿预订" description="控制房源、房型、房态、报价与新预订。关闭后对所有用户隐藏住宿入口；已有订单的查看、取消、入住退房及退款继续保留。" />
-    <social-switch v-if="canManageCommunity" feature="recruitment" title="求职招聘" description="统一控制换宿、兼职、全职、线上任务，以及岗位搜索、分享、新报名和招聘发布。关闭后对所有用户停用，已有报名的履约与退款记录保留。" />
-    <community-switch v-if="canManageCommunity" />
-    <social-switch v-if="canManageCommunity" feature="wish" title="心愿互助" description="控制心愿广场、发布和接单。关闭后隐藏这些入口，历史订单的交付、取消与退款继续保留。" />
-    <social-switch v-if="canManageCommunity" feature="group-chat" title="群聊与入群" description="控制群聊、建群及活动群、门店群、地区群入口。关闭后保留业务沟通、客服、报名和订单服务。" />
-    <social-switch v-if="canManageCommunity" feature="private-chat" title="用户私信与交友互动" description="控制用户私信、交换联系方式、关注用户和同行交友。关闭后隐藏入口并停用历史私聊；招聘、接单等业务沟通及客服继续保留。" />
+    <el-card v-if="canManageCommunity" id="feature-switches" shadow="never">
+      <template #header>
+        <h2>小程序功能开关</h2>
+        <p>这里控制小程序前台的功能显示</p>
+      </template>
+      <div class="switch-grid">
+        <social-switch feature="stay-booking" title="旅居住宿预订" description="控制房源、房型、房态、报价与新预订。关闭后对所有用户隐藏住宿入口；已有订单的查看、取消、入住退房及退款继续保留。" />
+        <social-switch feature="recruitment" title="求职招聘" description="统一控制换宿、兼职、全职、线上任务，以及岗位搜索、分享、新报名和招聘发布。关闭后对所有用户停用，已有报名的履约与退款记录保留。" />
+        <community-switch />
+        <social-switch feature="wish" title="心愿互助" description="控制心愿广场、发布和接单。关闭后隐藏这些入口，历史订单的交付、取消与退款继续保留。" />
+        <social-switch feature="group-chat" title="群聊与入群" description="控制群聊、建群及活动群、门店群、地区群入口。关闭后保留业务沟通、客服、报名和订单服务。" />
+        <social-switch feature="private-chat" title="用户私信与交友互动" description="控制用户私信、交换联系方式、关注用户和同行交友。关闭后隐藏入口并停用历史私聊；招聘、接单等业务沟通及客服继续保留。" />
+      </div>
+    </el-card>
     <!-- 有「数据看板」权限的账号，首页直接看看板；没有的显示一句欢迎和操作提示 -->
     <dashboard-panel v-if="canView" />
     <div v-else class="home-welcome">
@@ -28,6 +36,25 @@ const device = computed(() => useAppStore().device)
 </script>
 
 <style scoped>
+#feature-switches {
+  margin-bottom: 20px;
+}
+#feature-switches h2 {
+  margin: 0;
+  font-size: var(--el-font-size-large);
+}
+#feature-switches p {
+  margin: 4px 0 0;
+  color: var(--el-text-color-regular);
+}
+.switch-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 991px) {
+  .switch-grid { grid-template-columns: minmax(0, 1fr); }
+}
 .home-welcome {
   padding: 24px 4px;
   color: var(--el-text-color-regular);

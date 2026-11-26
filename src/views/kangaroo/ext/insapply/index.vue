@@ -1,7 +1,7 @@
 <template>
   <div class="app-container insurance-admin">
     <header class="page-heading"><div><h2>投保与退费</h2><p>核对缴费、登记真实保单，处理店家选择的退费去向。</p></div></header>
-    <el-tabs v-model="tab" @tab-change="changeTab">
+    <el-tabs v-model="tab">
       <el-tab-pane label="投保申请" name="applies" />
       <el-tab-pane label="保险退费" name="refunds" />
     </el-tabs>
@@ -16,11 +16,11 @@
       <el-table-column prop="insuredName" label="被保险人" min-width="120" />
       <el-table-column prop="storeName" label="门店" min-width="160" show-overflow-tooltip />
       <el-table-column v-if="tab === 'applies'" prop="planName" label="保险方案" min-width="140" show-overflow-tooltip />
-      <el-table-column label="金额" min-width="120"><template #default="{ row }">¥{{ money(row.paymentStatus === 'legacy' ? row.referencePriceFen : row.amountFen) }}<small v-if="tab === 'applies' && row.paymentStatus === 'legacy'">历史参考保费</small></template></el-table-column>
+      <el-table-column label="金额" min-width="120"><template #default="{ row }">¥{{ money(tab === 'refunds' ? (row.approvedFen ?? row.amountFen) : (row.paymentStatus === 'legacy' ? row.referencePriceFen : row.amountFen)) }}<small v-if="tab === 'applies' && row.paymentStatus === 'legacy'">历史参考保费</small></template></el-table-column>
       <el-table-column v-if="tab === 'applies'" label="缴费" min-width="130"><template #default="{ row }">{{ paymentLabel(row) }}</template></el-table-column>
       <el-table-column v-else label="退费去向" min-width="140"><template #default="{ row }">{{ destinationLabel(row.destination) }}</template></el-table-column>
-      <el-table-column label="状态" min-width="140"><template #default="{ row }"><el-tag :type="statusTone(row.status)">{{ (tab === 'applies' ? row.statusLabel || insuranceStatus[row.status] : refundStatus[row.status]) || row.status }}</el-tag><small v-if="row.refundRequired">需处理退费</small></template></el-table-column>
-      <el-table-column label="操作" fixed="right" width="150"><template #default="{ row }"><el-button link type="primary" @click="openDetail(row.applyId, tab === 'refunds' ? row.refundId : null)" v-hasPermi="['kangaroo:insapply:query']">{{ tab === 'refunds' && row.status === 'pending' ? '查看并审核' : '查看' }}</el-button></template></el-table-column>
+      <el-table-column label="状态" min-width="140"><template #default="{ row }"><el-tag :type="statusTone(row.status)">{{ (tab === 'applies' ? row.statusLabel || insuranceStatus[row.status] : refundLabel(row)) || row.status }}</el-tag><small v-if="row.refundRequired">需处理退费</small></template></el-table-column>
+      <el-table-column label="操作" fixed="right" width="150"><template #default="{ row }"><el-button link type="primary" @click="openDetail(row.applyId, tab === 'refunds' ? row.refundId : null)" v-hasPermi="['kangaroo:insapply:query']">{{ tab === 'refunds' && (!row.policyNo || row.hqDeparture) && row.status === 'pending' ? '查看并审核' : '查看' }}</el-button></template></el-table-column>
     </el-table>
     <pagination v-show="total > 0" :total="total" v-model:page="query.pageNum" v-model:limit="query.pageSize" @pagination="loadList" />
 
@@ -46,11 +46,15 @@
           </section>
           <section v-if="editor === 'reject' && canReject" class="editor" aria-label="不予办理原因"><h3>不予办理</h3><p>已缴费的申请会进入退费待处理，不会在此直接退款。历史或未缴费申请关闭后不产生退款。</p><el-input v-model="rejectReason" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="填写原因" :disabled="busy" /><div class="actions"><el-button type="danger" :loading="busy" @click="rejectApply">确认不予办理</el-button><el-button :disabled="busy" @click="editor = ''">取消</el-button></div></section>
           <section class="refund-section"><h3>退费记录</h3><p v-if="!detail.refunds?.length" class="muted">尚未申请保险退费。</p><div v-for="refund in detail.refunds || []" :key="refund.refundId" class="refund-record">
-            <div class="refund-heading"><strong>退费 #{{ refund.refundId }}</strong><el-tag :type="statusTone(refund.status)">{{ refundStatus[refund.status] || refund.status }}</el-tag></div>
-            <dl class="facts"><dt>店家选择</dt><dd>{{ destinationLabel(refund.destination) }}</dd><dt>申请金额</dt><dd>¥{{ money(refund.amountFen) }}</dd><dt v-if="refund.approvedFen != null">核定金额</dt><dd v-if="refund.approvedFen != null">¥{{ money(refund.approvedFen) }}</dd><dt>原因</dt><dd>{{ refund.reason || '—' }}</dd><dt v-if="refund.handleNote">处理说明</dt><dd v-if="refund.handleNote">{{ refund.handleNote }}</dd><dt v-if="refund.createdAt">申请时间</dt><dd v-if="refund.createdAt">{{ refund.createdAt }}</dd></dl>
-            <el-button v-if="refund.status === 'pending' && selectedRefundId !== refund.refundId" type="primary" plain :disabled="busy" @click="startAudit(refund)" v-hasPermi="['kangaroo:insapply:handle']">审核这笔退费</el-button>
+            <div class="refund-heading"><strong>退费 #{{ refund.refundId }}</strong><el-tag :type="statusTone(refund.status)">{{ refundLabel(refund, detail.policyNo) }}</el-tag></div>
+            <dl class="facts"><dt>店家选择</dt><dd>{{ destinationLabel(refund.destination) }}</dd><dt>{{ refund.verifiedDepartureDate ? '核定金额' : '申请金额' }}</dt><dd>¥{{ money(refund.verifiedDepartureDate ? refund.approvedFen ?? refund.amountFen : refund.amountFen) }}</dd><dt v-if="refund.approvedFen != null && !refund.verifiedDepartureDate">核定金额</dt><dd v-if="refund.approvedFen != null && !refund.verifiedDepartureDate">¥{{ money(refund.approvedFen) }}</dd><dt v-if="refund.departureDate">填报离店日期</dt><dd v-if="refund.departureDate">{{ refund.departureDate }}</dd><dt v-if="refund.verifiedDepartureDate">核实离店日期</dt><dd v-if="refund.verifiedDepartureDate">{{ refund.verifiedDepartureDate }}</dd><dt>原因</dt><dd>{{ refund.reason || '—' }}</dd><dt v-if="refund.handleNote">处理说明</dt><dd v-if="refund.handleNote">{{ refund.handleNote }}</dd><dt v-if="refund.createdAt">申请时间</dt><dd v-if="refund.createdAt">{{ refund.createdAt }}</dd></dl>
+            <el-form v-if="refund.hqDeparture" label-position="top" :disabled="busy" v-hasPermi="['kangaroo:insapply:handle']" @submit.prevent="headquartersAudit(refund)">
+              <el-form-item label="总部核实的实际离店日期"><el-date-picker v-model="departureDate" type="date" value-format="YYYY-MM-DD" /></el-form-item>
+              <el-button type="primary" @click="headquartersAudit(refund)">核算金额并办理</el-button>
+            </el-form>
+            <el-button v-if="refund.status === 'pending' && !detail.policyNo && selectedRefundId !== refund.refundId" type="primary" plain :disabled="busy" @click="startAudit(refund)" v-hasPermi="['kangaroo:insapply:handle']">审核这笔退费</el-button>
             <div v-if="refund.destination === 'original' && ['processing', 'failed'].includes(refund.status)" class="actions" v-hasPermi="['kangaroo:insapply:handle']"><el-button :loading="busy" @click="recheckRefund(refund)">核对渠道结果</el-button><small>查询原退款单的实际结果，不会重复发起退款。</small></div>
-            <el-form v-if="refund.status === 'pending' && selectedRefundId === refund.refundId" label-position="top" :disabled="busy" class="editor" v-hasPermi="['kangaroo:insapply:handle']" @submit.prevent="submitAudit(refund, true)">
+            <el-form v-if="refund.status === 'pending' && !detail.policyNo && selectedRefundId === refund.refundId" label-position="top" :disabled="busy" class="editor" v-hasPermi="['kangaroo:insapply:handle']" @submit.prevent="submitAudit(refund, true)">
               <p>按实际退保结果核定金额；退费去向由店家选择，此处不能更改。</p>
               <el-form-item label="核定退费金额（元）"><el-input v-model="auditAmount" inputmode="decimal" placeholder="最多两位小数" /></el-form-item>
               <el-form-item label="审核说明（必填）"><el-input v-model="auditReason" type="textarea" :rows="3" maxlength="500" show-word-limit placeholder="填写核定依据，或不予退费的原因" /></el-form-item>
@@ -67,13 +71,15 @@
 <script setup name="KgExtInsApply">
 import { computed, onBeforeUnmount, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listInsuranceApplies, getInsuranceApply, registerInsurancePolicy, rejectInsuranceApply, listInsuranceRefunds, auditInsuranceRefund, recheckInsuranceRefund } from '@/api/kangaroo/insurance-finance'
-import { insuranceStatus, refundStatus, destinationLabel, money, amountToFen, validPolicyDates } from './finance-format'
+import { listInsuranceApplies, getInsuranceApply, registerInsurancePolicy, rejectInsuranceApply, listInsuranceRefunds, auditInsuranceRefund, previewInsuranceRefund, recheckInsuranceRefund } from '@/api/kangaroo/insurance-finance'
+import { insuranceStatus, refundStatus, refundLabel, destinationLabel, money, amountToFen, validPolicyDates } from './finance-format'
 
-const tab = ref('applies'), query = reactive({ keyword: '', status: '', pageNum: 1, pageSize: 20 })
+const route = useRoute()
+const tab = ref(route.query.tab === 'refunds' ? 'refunds' : 'applies'), query = reactive({ keyword: '', status: '', pageNum: 1, pageSize: 20 })
 const rows = ref([]), total = ref(0), loading = ref(false), listError = ref('')
 const open = ref(false), detail = ref(null), detailId = ref(null), detailLoading = ref(false), detailError = ref(''), actionError = ref(''), busy = ref(false)
 const editor = ref(''), policy = reactive({ policyNo: '', startDate: '', endDate: '' }), rejectReason = ref('')
+const departureDate = ref('')
 const selectedRefundId = ref(null), auditAmount = ref(''), auditReason = ref('')
 let active = true, listEpoch = 0, detailEpoch = 0
 const statuses = computed(() => tab.value === 'applies' ? insuranceStatus : refundStatus)
@@ -92,7 +98,8 @@ async function loadList() {
   finally { if (active && epoch === listEpoch) loading.value = false }
 }
 function search() { query.pageNum = 1; loadList() }
-function changeTab() { query.status = ''; search() }
+watch(() => route.query.tab, value => { tab.value = value === 'refunds' ? 'refunds' : 'applies' })
+watch(tab, () => { query.status = ''; search() })
 function reset() { query.keyword = ''; query.status = ''; search() }
 function startAudit(refund) { selectedRefundId.value = refund.refundId; auditAmount.value = money(refund.amountFen); auditReason.value = ''; actionError.value = '' }
 async function openDetail(id, refundId = null) {
@@ -103,8 +110,10 @@ async function openDetail(id, refundId = null) {
     const { data } = await getInsuranceApply(id)
     if (!active || epoch !== detailEpoch || !open.value) return
     detail.value = data
+    const pending = data?.refunds?.find(r => r.hqDeparture)
+    departureDate.value = pending?.verifiedDepartureDate || pending?.departureDate || ''
     const refund = data?.refunds?.find(r => r.refundId === refundId && r.status === 'pending')
-    if (refund) startAudit(refund)
+    if (refund && !data.policyNo) startAudit(refund)
   } catch (error) { if (active && epoch === detailEpoch) detailError.value = message(error) }
   finally { if (active && epoch === detailEpoch) detailLoading.value = false }
 }
@@ -134,6 +143,23 @@ function rejectApply() {
   mutate(() => rejectInsuranceApply(id, { reason }), '处理结果已保存，请核对申请状态')
 }
 function recheckRefund(refund) { mutate(() => recheckInsuranceRefund(refund.refundId), '渠道结果已核对，请查看最新退费状态') }
+async function headquartersAudit(refund) {
+  if (!departureDate.value || busy.value) return
+  const payload = { approve: true, departureDate: departureDate.value }
+  const epoch = detailEpoch
+  busy.value = true
+  try {
+    const { data } = await previewInsuranceRefund(refund.refundId, payload)
+    if (!active || epoch !== detailEpoch) return
+    const fen = data.amountFen
+    const decision = fen === 0 ? '可退为零，确认后结案，付款人不能再次申请' : '退回' + destinationLabel(refund.destination) + ' ¥' + money(fen)
+    await ElMessageBox.confirm('离店日期 ' + payload.departureDate + '，' + decision, '确认总部办理')
+    await auditInsuranceRefund(refund.refundId, { ...payload, amountFen: fen })
+    ElMessage.success('总部办理完成')
+    await openDetail(detailId.value); await loadList()
+  } catch (e) { if (e !== 'cancel' && e !== 'close') actionError.value = message(e) }
+  finally { busy.value = false }
+}
 async function submitAudit(refund, approve) {
   if (busy.value) return
   const reason = auditReason.value.trim(), amountFen = amountToFen(auditAmount.value)

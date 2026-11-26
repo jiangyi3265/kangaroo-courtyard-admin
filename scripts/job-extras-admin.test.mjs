@@ -374,13 +374,13 @@ async function uploadLimits(kind) {
   return { ...captured.limits, apiKind: captured.apiKind }
 }
 
-test('住宿视频：3 分钟、100MB，提示写住宿视频；别的 kind 不变', async () => {
+test('住宿和小院视频限 3 分钟、短视频限 1 分钟，文件上限均为 200MB', async () => {
   const mb = 1024 * 1024
-  assert.deepEqual(await uploadLimits('lodging'), { maxSeconds: 180, maxBytes: 100 * mb, label: '住宿视频', apiKind: 'lodging' })
-  assert.deepEqual(await uploadLimits('intro'), { maxSeconds: 180, maxBytes: 100 * mb, label: '小院视频', apiKind: 'intro' })
-  for (const kind of ['room', 'diary']) assert.deepEqual(await uploadLimits(kind), { maxSeconds: 60, maxBytes: 50 * mb, label: '短视频', apiKind: kind })
+  assert.deepEqual(await uploadLimits('lodging'), { maxSeconds: 180, maxBytes: 200 * mb, label: '住宿视频', apiKind: 'lodging' })
+  assert.deepEqual(await uploadLimits('intro'), { maxSeconds: 180, maxBytes: 200 * mb, label: '小院视频', apiKind: 'intro' })
+  for (const kind of ['room', 'diary']) assert.deepEqual(await uploadLimits(kind), { maxSeconds: 60, maxBytes: 200 * mb, label: '短视频', apiKind: kind })
   const source = read(UPLOAD)
-  assert.match(source, /\{\{ longVideo \? '最长 3 分钟，最大 100MB' : '最长 1 分钟，最大 50MB' \}\}/)
+  assert.match(source, /\{\{ longVideo \? '最长 3 分钟，最大 200MB' : '最长 1 分钟，最大 200MB' \}\}/)
   assert.match(source, /<p v-if="kind === 'intro'">\{\{ STAY_VIDEO_TEXT \}\}/, '「旅居详情页的视频就是这个」只给小院视频')
   const java = read(JAVA + 'controller/admin/KgStayVideoController.java')
   assert.match(java, /"lodging"\.equals\(kind\) \? "job"/, '后端认这个 kind，岗位权限能传')

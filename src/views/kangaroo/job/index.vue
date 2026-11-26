@@ -816,6 +816,7 @@ function onlinePriceChanged(v) {
 const jobList = ref([])
 const storeOptions = ref([])
 const open = ref(false)
+let listRequest = 0
 const loading = ref(true)
 const showSearch = ref(window.innerWidth > 768)  // 手机上搜索栏先收起，点右边放大镜再展开
 const ids = ref([])
@@ -913,18 +914,21 @@ function formatSalary(row) {
 
 /** 查询岗位列表 */
 function getList() {
+  const request = ++listRequest
   loading.value = true
   listJob(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
+    if (request !== listRequest) return
     jobList.value = response.rows
     total.value = response.total
   }).catch(() => {
+    if (request !== listRequest) return
     // 查询失败必须把上一次的结果清掉：留着旧数据和旧 total，
     // 运营会把它当成本次查询的结果。具体错误 request.js 已经弹过了。
     jobList.value = []
     total.value = 0
   }).finally(() => {
     // loading 收敛在 finally：无论成功、失败还是以后新增分支，遮罩都一定会关
-    loading.value = false
+    if (request === listRequest) loading.value = false
   })
 }
 

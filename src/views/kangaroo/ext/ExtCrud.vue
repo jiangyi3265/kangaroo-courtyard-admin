@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <notification-guide v-if="['jobsub', 'substpl', 'sublog'].includes(props.entity)" :context="props.entity" />
-    <p v-if="props.entity === 'city'" class="city-guide">上传换工群二维码：找到对应城市，点击操作列「地区群码」，上传群二维码并填写有效期后保存。用户在「保险与地区群」查看岗位所在地区的群码；群码过期后自动隐藏，请及时更新。负责人资料点「修改」，员工权限在「员工授权」设置。</p>
+    <p v-if="props.entity === 'city'" class="city-guide">上传换工群二维码：找到对应城市，点击操作列「地区群码」，上传群二维码并填写有效期后保存。用户在「保险与地区群」查看岗位所在地区的群码；群码过期后自动隐藏，请及时更新。固定换工联系人请在「修改 → 负责人资料」填写本城换工主理人的小程序账号 ID。留空时按账号 ID 顺序选用首位有效主理人。负责人资料点「修改」，员工权限在「员工授权」设置。</p>
     <el-alert v-if="metaError" title="页面配置读取失败" type="error" :closable="false" show-icon><el-button link type="primary" @click="initialize">重新加载页面</el-button></el-alert>
     <el-alert v-if="listError" :title="listError" type="error" :closable="false" show-icon><el-button link type="primary" @click="getList">重新加载</el-button></el-alert>
     <el-form :model="query" :inline="true" v-show="showSearch" class="ext-search">
@@ -94,9 +94,9 @@
       <!-- 后端给这条记录补的说明（如结算申请「余额不足：当前 -97.00」），详情里也看得到 -->
       <el-alert v-if="viewOnly && form.extNote" :title="form.extNote" type="warning" :closable="false" show-icon style="margin-bottom: 16px" />
       <!-- 120px：放得下 7 个字的标签（如「折扣或优惠说明」），110px 时会折行压到下一项的标签上 -->
-      <el-form :key="editorVersion" ref="formRef" :model="form" :rules="rules" :disabled="saving" label-width="120px" :label-position="isMobile ? 'top' : 'right'">
+      <el-form :key="editorVersion" ref="formRef" :model="editorModel" :rules="rules" :disabled="saving" label-width="120px" :label-position="isMobile ? 'top' : 'right'">
         <display-material-checklist v-if="props.entity === 'stay'" :items="stayMaterials" inherited-label="沿用封面" inherited-hint="未单独设置视频封面时，前端沿用房源封面。生活碎片内容在「生活碎片」中维护，评价由用户提交。" @locate="focusDisplayField(formRef?.$el, $event)" />
-        <el-form-item v-for="f in formFields" :key="f.name" :label="props.entity === 'stay' && f.name === 'latitude' ? '地图定位' : (props.labels[f.name] || (props.entity === 'city' && cityGroupLabels[f.name]) || f.label)" :prop="f.name" :required="props.entity === 'roomtype' && f.name === 'weekTotalFen' ? true : undefined" :data-display-field="f.name">
+        <el-form-item v-for="f in formFields" :key="f.name" :label="props.entity === 'stay' && f.name === 'latitude' ? '地图定位' : (props.labels[f.name] || (props.entity === 'city' && cityGroupLabels[f.name]) || f.label)" :prop="f.name" :data-display-field="f.name">
           <stay-cancel-policy-editor v-if="props.entity === 'stay' && f.name === 'cancelPolicyConfig'" v-model="form.cancelPolicyConfig" :disabled="viewOnly || saving || !f.editable" />
           <stay-booking-notice-editor v-else-if="props.entity === 'stay' && f.name === 'bookingNoticeConfig'" v-model="form.bookingNoticeConfig" :default-value="f.editorDefault" :disabled="viewOnly || saving || !f.editable" />
           <place-location-input v-else-if="props.entity === 'stay' && f.name === 'latitude'" :latitude="form.latitude" :longitude="form.longitude" :address="form.address || ''" :city="form.city || ''" :disabled="viewOnly || saving || !f.editable" empty-hint="不单独设置时沿用所属门店定位；门店也未定位时，需要先补充。" @change="Object.assign(form, $event)" />
@@ -135,6 +135,7 @@
           </el-select>
           <el-switch v-else-if="f.type === 'switch'" v-model="form[f.name]" active-value="1" inactive-value="0" />
           <el-input-number v-else-if="f.type === 'int'" v-model="form[f.name]" :precision="0" :min="f.min ?? undefined" :max="f.max ?? undefined" controls-position="right" style="width: 100%" />
+          <el-input v-else-if="props.entity === 'roomtype' && f.name === 'weekTotalFen'" v-model="moneyForm[f.name]" inputmode="decimal" clearable placeholder="例如 119"><template #append>元/7晚</template></el-input>
           <el-input v-else-if="props.entity === 'roomtype' && roomPeriodField(f.name)" v-model="moneyForm[f.name]" inputmode="decimal" clearable placeholder="不设置请留空" :maxlength="10"><template #append>元/{{ roomPeriodField(f.name).nights }}晚</template></el-input>
           <el-input-number v-else-if="f.type === 'money'" v-model="moneyForm[f.name]" :min="f.min != null ? f.min / 100 : 0" :max="f.max != null ? f.max / 100 : undefined" :precision="2" controls-position="right" style="width: 100%" />
           <el-date-picker v-else-if="f.type === 'date'" v-model="form[f.name]" type="date" value-format="YYYY-MM-DD" style="width: 100%" />
@@ -324,6 +325,8 @@ const viewOnly = ref(false)
 const dialogTitle = ref('')
 const form = ref({})
 const moneyForm = ref({})
+// 房型编辑时校验输入框里的元金额；form 中原始的分金额用于判断售价是否改过。
+const editorModel = computed(() => props.entity === 'roomtype' ? { ...form.value, ...moneyForm.value } : form.value)
 const roomPeriodField = name => ROOM_PERIOD_PRICES.find(period => period.key === name)
 const query = reactive({ pageNum: 1, pageSize: 10, ...props.defaultQuery })
 const ranges = reactive({})
@@ -336,7 +339,7 @@ const listFields = computed(() => props.listColumns
 const formFields = computed(() => {
   const fields = meta.value.fields.filter(f => (viewOnly.value || form.value[meta.value.pk] || f.editable) && !(props.entity === 'stay' && f.name === 'longitude') && !(props.entity === 'staydiary' && f.name === 'coverUrl' && form.value.mediaType !== 'video') && !(props.hideWhenEmpty.includes(f.name) && (form.value[f.name] === null || form.value[f.name] === undefined || form.value[f.name] === '')))
   if (props.entity !== 'city') return fields
-  const first = ['name', 'coordinatorName', 'coordinatorAvatar', 'coordinatorIntro']
+  const first = ['name', 'coordinatorUserId', 'coordinatorName', 'coordinatorAvatar', 'coordinatorIntro']
   if (cityEditorSection.value === 'coordinator') return first.map(name => fields.find(f => f.name === name)).filter(Boolean)
   if (cityEditorSection.value === 'group') return fields.filter(f => f.name.startsWith('regionGroup'))
   return fields.filter(f => !f.name.startsWith('coordinator') && !f.name.startsWith('regionGroup'))
@@ -347,8 +350,8 @@ const rules = computed(() => {
     if (f.required && f.editable && !(form.value[meta.value.pk] && f.createOnly) && f.type !== 'money') r[f.name] = [{ required: true, message: f.label + '不能为空', trigger: 'blur' }]
     if (props.entity === 'stay' && f.name === 'cancelPolicyConfig') r[f.name] = [{ validator: (rule, value, callback) => { const error = stayPolicyError(value); callback(error ? new Error(error) : undefined) }, trigger: 'change' }]
     if (props.entity === 'stay' && f.name === 'bookingNoticeConfig') r[f.name] = [{ validator: (rule, value, callback) => { const error = stayNoticeError(value); callback(error ? new Error(error) : undefined) }, trigger: 'change' }]
-    if (props.entity === 'roomtype' && f.name === 'weekTotalFen') r[f.name] = [{ validator: (rule, value, callback) => { try { roomWeekInputFen(moneyForm.value.weekTotalFen); callback() } catch (error) { callback(error) } }, trigger: 'change' }]
-    if (props.entity === 'roomtype' && roomPeriodField(f.name)) r[f.name] = [{ validator: (rule, value, callback) => { try { roomPeriodInputFen(moneyForm.value[f.name], roomPeriodField(f.name).nights); callback() } catch (error) { callback(error) } }, trigger: 'change' }]
+    if (props.entity === 'roomtype' && f.name === 'weekTotalFen') r[f.name] = [{ required: true, validator: (rule, value, callback) => { try { roomWeekInputFen(value); callback() } catch (error) { callback(error) } }, trigger: 'blur' }]
+    if (props.entity === 'roomtype' && roomPeriodField(f.name)) r[f.name] = [{ validator: (rule, value, callback) => { try { roomPeriodInputFen(value, roomPeriodField(f.name).nights); callback() } catch (error) { callback(error) } }, trigger: 'change' }]
   })
   return r
 })

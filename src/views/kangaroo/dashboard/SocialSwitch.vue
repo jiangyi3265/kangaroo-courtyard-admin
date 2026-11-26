@@ -38,6 +38,34 @@ async function change() {
 onMounted(load)
 </script>
 <style scoped>
-.community-switch { display:flex;justify-content:space-between;align-items:center;gap:24px;padding:22px 24px;margin-bottom:24px;border:1px solid var(--el-border-color-light);border-radius:10px;background:var(--el-bg-color); }
-.community-switch__heading {display:flex;align-items:center;gap:12px;}.community-switch h2{margin:0;font-size:18px;}.community-switch p{margin:9px 0 0;color:var(--el-text-color-regular);line-height:1.7;font-size:14px;}.community-switch .community-switch__note,.community-switch .community-switch__meta{color:var(--el-text-color-secondary);font-size:13px;}.community-switch .community-switch__error{color:var(--el-color-danger);}.community-switch__actions{display:flex;gap:10px;flex-shrink:0;}.community-switch__actions .el-button{margin:0;}@media(max-width:800px){.community-switch{align-items:stretch;flex-direction:column;padding:18px;}.community-switch__actions .el-button{flex:1;}}
+.community-switch {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  border-top: 1px solid var(--el-border-color-light);
+}
+.community-switch__heading, .community-switch__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.community-switch h2 {
+  margin: 0;
+  font-size: var(--el-font-size-medium);
+}
+.community-switch p {
+  margin: 6px 0 0;
+  color: var(--el-text-color-regular);
+  line-height: 1.6;
+  font-size: var(--el-font-size-base);
+}
+.community-switch .community-switch__note, .community-switch .community-switch__meta {
+  color: var(--el-text-color-secondary);
+  font-size: var(--el-font-size-small);
+}
+.community-switch .community-switch__error { color: var(--el-color-danger); }
+.community-switch__actions .el-button { margin: 0; }
 </style>

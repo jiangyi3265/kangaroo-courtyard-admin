@@ -11,7 +11,9 @@
     </template>
 
     <div class="right-menu">
+      <headquarters-pending />
       <merchant-request-bell />
+      <ops-guide />
       <template v-if="appStore.device !== 'mobile'">
         <el-tooltip content="主题模式" effect="dark" placement="bottom">
           <div class="right-menu-item hover-effect theme-switch-wrapper" @click="toggleTheme">
@@ -52,7 +54,9 @@ import { ElMessageBox } from 'element-plus'
 import Breadcrumb from '@/components/Breadcrumb'
 import TopNav from '@/components/TopNav'
 import TopBar from './TopBar'
+import HeadquartersPending from './HeadquartersPending.vue'
 import MerchantRequestBell from './MerchantRequestBell.vue'
+import OpsGuide from '@/components/OpsGuide/index.vue'
 import Logo from './Sidebar/Logo'
 import Hamburger from '@/components/Hamburger'
 import useAppStore from '@/store/modules/app'

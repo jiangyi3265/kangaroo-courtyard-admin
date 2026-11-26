@@ -15,7 +15,7 @@
       </el-form>
       <el-alert v-if="attentionCount&&query.status!=='attention'" :title="'有 '+attentionCount+' 条任务员工有新动作（回复、申请延期、做不了或已提交），等你处理'" type="warning" show-icon :closable="false" class="attention-alert"><el-button link type="primary" @click="query.status='attention';search()">只看待处理</el-button></el-alert>
       <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
-      <el-table :data="rows" v-loading="loading" empty-text="暂无任务，点击右上方“派发任务”开始">
+      <el-table :data="rows" v-loading="loading" :empty-text="error || '暂无任务，点击右上方“派发任务”开始'">
         <el-table-column prop="taskId" label="编号" width="85"/><el-table-column prop="title" label="任务" min-width="200" show-overflow-tooltip/>
         <el-table-column label="负责人" min-width="140"><template #default="{row}">{{ row.nickname || '账号' + row.assigneeId }}<small>#{{ row.assigneeId }}</small></template></el-table-column>
         <el-table-column prop="roleLabel" label="岗位" width="110"/>
@@ -32,7 +32,8 @@
         <el-form-item label="搜索"><el-input v-model="batchQuery.keyword" placeholder="任务标题" clearable @keyup.enter="loadBatches(true)"/></el-form-item>
         <el-form-item><el-button type="primary" @click="loadBatches(true)">查询</el-button><el-button icon="Refresh" @click="loadBatches(false)">刷新</el-button></el-form-item>
       </el-form>
-      <el-table :data="batches" v-loading="batchLoading" empty-text="还没有派发过任务">
+      <el-alert v-if="batchError" :title="batchError" type="error" :closable="false" show-icon />
+      <el-table :data="batches" v-loading="batchLoading" :empty-text="batchError || '还没有派发过任务'">
         <el-table-column prop="title" label="任务" min-width="200" show-overflow-tooltip/>
         <el-table-column prop="scopeLabel" label="派给" min-width="160" show-overflow-tooltip/>
         <el-table-column label="完成" min-width="170"><template #default="{row}"><div class="progress"><span>{{ row.done }}/{{ row.tasks }}</span><el-progress :percentage="row.tasks ? Math.round(row.done*100/row.tasks) : 0" :show-text="false" :stroke-width="8"/></div></template></el-table-column>
@@ -60,10 +61,11 @@
         <template v-else>
           <el-form-item v-if="form.mode==='role'" label="岗位" prop="roleCode"><el-select v-model="form.roleCode" placeholder="选一个岗位" style="width:100%" @change="refreshAudience"><el-option v-for="r in roles" :key="r.roleCode" :value="r.roleCode" :label="r.label+'（'+r.people+' 人）'"/></el-select></el-form-item>
           <div class="pick-row">
-            <el-form-item label="只发某个城市（可不填）"><el-input v-model="form.city" clearable placeholder="例如：大理" @change="refreshAudience"/></el-form-item>
+            <el-form-item label="只发某个城市（可不填）"><el-input v-model="form.city" clearable placeholder="例如：大理" @input="clearAudience" @change="refreshAudience"/></el-form-item>
             <el-form-item label="只发某家门店（可不填）"><el-select v-model="form.storeId" clearable filterable placeholder="全部门店" @change="refreshAudience"><el-option v-for="s in stores" :key="s.storeId" :value="s.storeId" :label="s.storeName"/></el-select></el-form-item>
           </div>
           <el-alert v-if="audience" :type="audience.count>audience.max||!audience.count ? 'error' : 'info'" :closable="false" show-icon :title="audience.count ? '将发给 '+audience.count+' 人（一人一条）'+(audience.count>audience.max ? '，超过一次 '+audience.max+' 人的上限，请按城市或门店分开发' : '') : '没有符合条件的在职员工'"><p v-if="audience.sample.length" class="sample">{{ audience.sample.map(p=>(p.nickname||'账号'+p.appUserId)+'（'+p.roleLabel+' · '+p.storeName+'）').join('、') }}{{ audience.count>audience.sample.length ? ' 等' : '' }}</p></el-alert>
+          <el-button v-if="audienceError" link type="primary" @click="refreshAudience">重新读取收件人</el-button>
           <small>全体员工 = 换工主理人、小院主理人、线上任务专员、商家服务人、城市负责人（合作商家不算）。一人有好几个岗位、好几家店，只发一条。</small>
         </template>
         <el-form-item label="任务标题" prop="title"><el-input v-model="form.title" maxlength="100" show-word-limit placeholder="例如：补充本周门店实拍资料"/></el-form-item>
@@ -71,7 +73,7 @@
         <el-form-item label="截止日期（可不填）"><el-date-picker v-model="form.dueDate" type="date" value-format="YYYY-MM-DD" :disabled-date="beforeToday" placeholder="选择日期"/></el-form-item>
         <p class="form-tip">确认派发后，员工在员工端会收到提醒；可以接收、回复提问、申请延期或说明做不了，完成时填写说明并上传1至9张图片。</p>
       </el-form>
-      <template #footer><el-button :disabled="saving" @click="assignOpen=false">取消</el-button><el-button type="primary" :loading="saving" @click="assign">确认派发{{ assignCount ? '（'+assignCount+'人）' : '' }}</el-button></template>
+      <template #footer><el-button :disabled="saving" @click="assignOpen=false">取消</el-button><el-button type="primary" :loading="saving" :disabled="!assignCount" @click="assign">确认派发{{ assignCount ? '（'+assignCount+'人）' : '' }}</el-button></template>
     </el-drawer>
 
     <el-drawer v-model="detailOpen" title="任务详情与流转记录" size="min(780px, 100%)" :close-on-click-modal="!working" :close-on-press-escape="!working" :show-close="!working">
@@ -125,34 +127,80 @@ const ROLE_OPTIONS=[{value:'manager',label:'换工主理人'},{value:'keeper',la
 const HANDLE_TIPS={reply:'回复员工的提问或留言（必填）',extend:'说明（可不填），例如：同意延期',reassign:'转派说明（可不填），原负责人和新负责人都会收到',close:'关闭原因（可不填），员工会收到',reopen:'说明（可不填），任务会回到「待接收」'}
 const view=ref('people'),rows=ref([]),total=ref(0),loading=ref(false),error=ref(''),attentionCount=ref(0),query=reactive({pageNum:1,status:'',keyword:'',roleCode:'',batchId:null}),batchTitle=ref('')
 let listSeq=0,detailSeq=0,peopleSeq=0,audienceSeq=0,batchSeq=0,timer
-async function loadList(){const seq=++listSeq;loading.value=true;error.value='';try{const r=await listStaffTasks({...query});if(seq===listSeq){rows.value=r.data.rows;total.value=r.data.total;attentionCount.value=Number(r.data.attentionCount||0)}}catch(e){if(seq===listSeq)error.value='任务读取失败，请点击刷新重试'}finally{if(seq===listSeq)loading.value=false}}
+async function loadList(){
+  const seq=++listSeq
+  loading.value=true
+  error.value=''
+  try{
+    const r=await listStaffTasks({...query})
+    if(seq===listSeq){rows.value=r.data.rows;total.value=r.data.total;attentionCount.value=Number(r.data.attentionCount||0)}
+  }catch{
+    if(seq===listSeq){rows.value=[];total.value=0;attentionCount.value=0;error.value='任务读取失败，请点击刷新重试'}
+  }finally{if(seq===listSeq)loading.value=false}
+}
 function search(){query.pageNum=1;loadList()}
-const batches=ref([]),batchTotal=ref(0),batchLoading=ref(false),batchQuery=reactive({pageNum:1,keyword:''})
-async function loadBatches(reset){if(reset)batchQuery.pageNum=1;const seq=++batchSeq;batchLoading.value=true;try{const r=await listTaskBatches({...batchQuery});if(seq===batchSeq){batches.value=r.data.rows;batchTotal.value=r.data.total}}catch(e){/* 请求层已提示 */}finally{if(seq===batchSeq)batchLoading.value=false}}
+const batches=ref([]),batchTotal=ref(0),batchLoading=ref(false),batchError=ref(''),batchQuery=reactive({pageNum:1,keyword:''})
+async function loadBatches(reset){
+  if(reset)batchQuery.pageNum=1
+  const seq=++batchSeq
+  batchLoading.value=true
+  batchError.value=''
+  try{
+    const r=await listTaskBatches({...batchQuery})
+    if(seq===batchSeq){batches.value=r.data.rows;batchTotal.value=r.data.total}
+  }catch{
+    if(seq===batchSeq){batches.value=[];batchTotal.value=0;batchError.value='批次读取失败，请刷新重试'}
+  }finally{if(seq===batchSeq)batchLoading.value=false}
+}
 function switchView(v){if(v==='batches')loadBatches(false);else loadList()}
 function openBatch(row){query.batchId=row.batchId;batchTitle.value=row.title;query.status='';view.value='people';search()}
 function clearBatch(){query.batchId=null;batchTitle.value='';search()}
 
 const assignOpen=ref(false),saving=ref(false),formRef=ref(),form=reactive({mode:'pick',grantIds:[],roleCode:'',city:'',storeId:null,title:'',description:'',dueDate:null,requestId:''})
 const rules={grantIds:[{validator:(r,v,cb)=>form.mode!=='pick'||(v&&v.length)?cb():cb(new Error('请选择至少一位员工')),trigger:'change'}],roleCode:[{validator:(r,v,cb)=>form.mode!=='role'||v?cb():cb(new Error('请选择岗位')),trigger:'change'}],title:[{required:true,whitespace:true,message:'请填写任务标题',trigger:'blur'}],description:[{required:true,whitespace:true,message:'请填写任务要求',trigger:'blur'}]}
-const people=ref([]),recipientLoading=ref(false),peopleMore=ref(false),pickRole=ref(''),roles=ref([]),stores=ref([]),audience=ref(null);let peoplePage=1,peopleKeyword=''
+const people=ref([]),recipientLoading=ref(false),peopleMore=ref(false),pickRole=ref(''),roles=ref([]),stores=ref([]),audience=ref(null),audienceError=ref(false);let peoplePage=1,peopleKeyword=''
 const assignCount=computed(()=>form.mode==='pick'?form.grantIds.length:(audience.value&&audience.value.count<=audience.value.max?audience.value.count:0))
 function beforeToday(date){const today=new Date();today.setHours(0,0,0,0);return date<today}
 function newRequestId(){return globalThis.crypto?.randomUUID?.() || Date.now().toString(36)+'_'+Math.random().toString(36).slice(2)+'_'+Math.random().toString(36).slice(2)}
-function openAssign(){Object.assign(form,{mode:'pick',grantIds:[],roleCode:'',city:'',storeId:null,title:'',description:'',dueDate:null,requestId:newRequestId()});people.value=[];peopleKeyword='';peoplePage=1;pickRole.value='';audience.value=null;assignOpen.value=true;loadPeople();taskRoles().then(r=>{roles.value=r.data}).catch(()=>{});if(!stores.value.length)listStoreOptions().then(r=>{stores.value=(r.rows||[])}).catch(()=>{})}
+function openAssign(){Object.assign(form,{mode:'pick',grantIds:[],roleCode:'',city:'',storeId:null,title:'',description:'',dueDate:null,requestId:newRequestId()});people.value=[];peopleKeyword='';peoplePage=1;pickRole.value='';clearAudience();assignOpen.value=true;loadPeople();taskRoles().then(r=>{roles.value=r.data}).catch(()=>{});if(!stores.value.length)listStoreOptions().then(r=>{stores.value=(r.rows||[])}).catch(()=>{})}
 function closeAssign(done){if(!saving.value)done()}
 async function loadPeople(more=false){const seq=++peopleSeq;if(more)peoplePage++;recipientLoading.value=true;try{const r=await taskRecipients({keyword:peopleKeyword,roleCode:pickRole.value||undefined,pageNum:peoplePage});if(seq!==peopleSeq)return;const keep=more?people.value:people.value.filter(p=>form.grantIds.includes(p.grantId));people.value=[...new Map([...keep,...r.data.rows].map(p=>[p.grantId,p])).values()];peopleMore.value=r.data.hasMore}catch(e){if(seq===peopleSeq&&more)peoplePage--}finally{if(seq===peopleSeq)recipientLoading.value=false}}
 function searchRecipients(q){peopleKeyword=q||'';peoplePage=1;loadPeople()}
-async function refreshAudience(){formRef.value?.clearValidate?.();if(form.mode==='pick'||(form.mode==='role'&&!form.roleCode)){audience.value=null;return}const seq=++audienceSeq;try{const r=await taskAudience({mode:form.mode,roleCode:form.mode==='role'?form.roleCode:undefined,city:form.city||undefined,storeId:form.storeId||undefined});if(seq===audienceSeq)audience.value=r.data}catch(e){if(seq===audienceSeq)audience.value=null}}
+function clearAudience(){audienceSeq++;audience.value=null;audienceError.value=false}
+async function refreshAudience(){
+  clearAudience()
+  const seq=audienceSeq
+  formRef.value?.clearValidate?.()
+  if(form.mode==='pick'||(form.mode==='role'&&!form.roleCode))return
+  try{
+    const r=await taskAudience({mode:form.mode,roleCode:form.mode==='role'?form.roleCode:undefined,city:form.city||undefined,storeId:form.storeId||undefined})
+    if(seq===audienceSeq)audience.value=r.data
+  }catch{if(seq===audienceSeq)audienceError.value=true}
+}
 async function assign(){
   if(saving.value)return
-  try{await formRef.value.validate()}catch{return}
-  if(form.mode!=='pick'){
-    if(!audience.value||!audience.value.count||audience.value.count>audience.value.max){ElMessage.warning('先确认要发给的人：没有人或人数超过上限时不能派发');return}
-    try{await ElMessageBox.confirm('将给 '+audience.value.count+' 位员工每人派一条「'+form.title.trim()+'」，确认派发？','确认派发',{type:'warning',confirmButtonText:'确认派发',cancelButtonText:'再看看'})}catch{return}
-  }
   saving.value=true
-  try{const body={...form,grantIds:form.mode==='pick'?[...form.grantIds]:undefined,roleCode:form.mode==='role'?form.roleCode:undefined,city:form.mode==='pick'?undefined:(form.city||undefined),storeId:form.mode==='pick'?undefined:(form.storeId||undefined)};const r=await assignStaffTask(body);ElMessage.success('已派发 '+r.data.count+' 个任务，员工端会收到提醒');assignOpen.value=false;query.pageNum=1;query.status='';query.batchId=null;batchTitle.value='';view.value='people';await loadList()}catch(e){/* 请求层已提示错误，保留表单与幂等标识供重试。 */}finally{saving.value=false}
+  try{
+    await formRef.value.validate()
+    const pick=form.mode==='pick'
+    if(!pick){
+      if(!audience.value||!audience.value.count||audience.value.count>audience.value.max)return
+      try{await ElMessageBox.confirm('将给 '+audience.value.count+' 位员工每人派一条「'+form.title.trim()+'」，确认派发？','确认派发',{type:'warning',confirmButtonText:'确认派发',cancelButtonText:'再看看'})}catch{return}
+    }
+    const body={...form,grantIds:pick?[...form.grantIds]:undefined,roleCode:form.mode==='role'?form.roleCode:undefined,
+      city:pick?undefined:(form.city||undefined),storeId:pick?undefined:(form.storeId||undefined),audienceVersion:pick?undefined:audience.value.version}
+    try{
+      const r=await assignStaffTask(body)
+      ElMessage.success('已派发 '+r.data.count+' 个任务，员工端会收到提醒')
+    }catch(error){
+      // 业务拒绝后重新核对收件人。网络中断时沿用原确认内容和提交编号取回回执。
+      if(!pick && error?.isBusinessError)await refreshAudience()
+      return
+    }
+    assignOpen.value=false
+    query.pageNum=1;query.status='';query.batchId=null;batchTitle.value='';view.value='people'
+    await loadList()
+  }catch{/* 表单显示对应校验错误。 */}finally{saving.value=false}
 }
 
 const detailOpen=ref(false),detailLoading=ref(false),detail=ref(null),reviewNote=ref(''),working=ref(false),handleForm=reactive({action:'reply',content:'',dueDate:null,grantId:null}),reassignPeople=ref([])

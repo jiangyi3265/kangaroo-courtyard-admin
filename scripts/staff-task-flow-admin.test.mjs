@@ -4,6 +4,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { parse, compileTemplate, compileScript } from '@vue/compiler-sfc'
+import { runInNewContext } from 'node:vm'
 
 const raw = readFileSync(new URL('../src/views/kangaroo/stafftask/index.vue', import.meta.url), 'utf8')
 const page = raw.replace(/\r\n/g, '\n')
@@ -25,6 +26,29 @@ test('派发：点名 / 全体员工 / 按岗位，先看会发给多少人', ()
   assert.match(page, /audience\.value\.count>audience\.value\.max/)
   for (const role of ['manager', 'keeper', 'online_staff', 'merchant_service', 'city_lead']) assert.ok(page.includes(`value:'${role}'`), role)
   assert.ok(!page.includes("value:'merchant'"), '合作商家不算员工')
+})
+
+test('派发范围变化时，旧人数立即清空，慢返回不能覆盖新名单', async () => {
+  const start = page.indexOf('function clearAudience()')
+  const end = page.indexOf('async function assign()', start)
+  const pending = []
+  const audience = { value: null }
+  const form = { mode: 'all', city: '大理' }
+  const refresh = runInNewContext(`let audienceSeq = 0; ${page.slice(start, end)}; refreshAudience`, {
+    audience, form, formRef: {}, audienceError: {}, taskAudience: () => new Promise(resolve => pending.push(resolve))
+  })
+  const old = refresh()
+  form.city = '平潭'
+  const latest = refresh()
+  assert.equal(audience.value, null)
+  pending[1]({ data: { count: 1 } })
+  await latest
+  pending[0]({ data: { count: 8 } })
+  await old
+  assert.equal(audience.value.count, 1)
+  form.mode = 'pick'
+  await refresh()
+  assert.equal(audience.value, null)
 })
 
 test('按批次看：完成 x/y，点进去按批次筛每个人', () => {

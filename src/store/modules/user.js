@@ -15,6 +15,7 @@ const useUserStore = defineStore(
       nickName: '',
       avatar: '',
       roles: [],
+      adminFeatures: [],
       permissions: []
     }),
     actions: {
@@ -39,6 +40,7 @@ const useUserStore = defineStore(
         return new Promise((resolve, reject) => {
           getInfo().then(res => {
             const user = res.user
+            this.adminFeatures = Array.isArray(res.adminFeatures) ? res.adminFeatures : []
             let avatar = user.avatar || ""
             if (!isHttp(avatar)) {
               avatar = (isEmpty(avatar)) ? defAva : import.meta.env.VITE_APP_BASE_API + avatar
@@ -71,14 +73,18 @@ const useUserStore = defineStore(
           })
         })
       },
+      clearSession() {
+        this.token = ''
+        this.roles = []
+        this.adminFeatures = []
+        this.permissions = []
+        removeToken()
+      },
       // 退出系统
       logOut() {
         return new Promise((resolve, reject) => {
           logout(this.token).then(() => {
-            this.token = ''
-            this.roles = []
-            this.permissions = []
-            removeToken()
+            this.clearSession()
             resolve()
           }).catch(error => {
             reject(error)

@@ -76,6 +76,15 @@
     <el-table v-loading="loading" :data="appUserList">
       <el-table-column label="账号ID" align="center" prop="userId" width="90" />
       <el-table-column label="昵称" align="center" prop="nickname" :show-overflow-tooltip="true" />
+      <el-table-column label="专属头衔" align="center" width="150">
+        <template #default="{ row }">
+          <span>{{ row.honoraryTitle || '无' }}</span>
+          <el-button v-hasPermi="['kangaroo:memberlevel:edit']" link type="primary"
+            :loading="savingTitles.has(row.userId)" @click="toggleTitle(row)">
+            {{ row.honoraryTitle ? '撤销' : '授予城市鼠' }}
+          </el-button>
+        </template>
+      </el-table-column>
       <el-table-column label="手机号" align="center" prop="phone" width="130" />
       <el-table-column label="常驻城市" align="center" prop="city" :show-overflow-tooltip="true" />
       <el-table-column label="状态" align="center" width="90">
@@ -145,13 +154,14 @@
 </template>
 
 <script setup name="KgAppUser">
-import { listAppUser, getAppUser, changeAppUserStatus } from "@/api/kangaroo/appuser"
+import { listAppUser, getAppUser, changeAppUserStatus, setHonoraryTitle } from "@/api/kangaroo/appuser"
 
 const { proxy } = getCurrentInstance()
 const { sys_normal_disable } = proxy.useDict("sys_normal_disable")
 
 const appUserList = ref([])
 const open = ref(false)
+let listRequest = 0
 const loading = ref(true)
 const showSearch = ref(window.innerWidth > 768)  // 手机上搜索栏先收起，点右边放大镜再展开
 const total = ref(0)
@@ -182,18 +192,21 @@ function genderText(gender) {
 
 /** 查询小程序账号列表 */
 function getList() {
+  const request = ++listRequest
   loading.value = true
   listAppUser(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
+    if (request !== listRequest) return
     appUserList.value = response.rows
     total.value = response.total
   }).catch(() => {
+    if (request !== listRequest) return
     // 查询失败必须把上一次的结果清掉：留着旧数据和旧 total，
     // 运营会把它当成本次查询的结果。具体错误 request.js 已经弹过了。
     appUserList.value = []
     total.value = 0
   }).finally(() => {
     // loading 收敛在 finally：无论成功、失败还是以后新增分支，遮罩都一定会关
-    loading.value = false
+    if (request === listRequest) loading.value = false
   })
 }
 
@@ -231,6 +244,20 @@ function handleView(row) {
   }).catch(() => {
     // 取详情失败就别打开对话框，否则会弹出一个空白详情框；错误提示 request.js 已经给了
   })
+}
+
+const savingTitles = reactive(new Set())
+async function toggleTitle(row) {
+  if (savingTitles.has(row.userId)) return
+  const title = row.honoraryTitle ? '' : '城市鼠'
+  savingTitles.add(row.userId)
+  try {
+    await setHonoraryTitle(row.userId, title)
+    row.honoraryTitle = title
+    proxy.$modal.msgSuccess(title ? '已授予城市鼠' : '已撤销城市鼠')
+  } finally {
+    savingTitles.delete(row.userId)
+  }
 }
 
 /** 账号状态修改 */

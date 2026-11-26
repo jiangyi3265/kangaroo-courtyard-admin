@@ -42,6 +42,7 @@ export function roomWeekTotalFen(room = {}) {
 
 export function roomWeekInputFen(value) {
   const text = String(value ?? '').trim()
+  if (!text) throw new Error('请填写7天总价，例如每晚17元，7晚填119元')
   if (!/^\d+(\.\d{1,2})?$/.test(text)) throw new Error(PRICE_ERROR)
   const [whole, decimal = ''] = text.split('.')
   const fen = Number(whole) * 100 + Number(decimal.padEnd(2, '0'))

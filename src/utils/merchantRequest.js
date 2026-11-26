@@ -17,6 +17,7 @@ export const BELL_IDLE_MS = 5 * 60 * 1000
 export function createPendingPoll({
   fetchCount,
   onCount,
+  onError,
   isHidden = () => false,
   now = () => Date.now(),
   setTimer = (fn, ms) => setInterval(fn, ms),
@@ -38,8 +39,8 @@ export function createPendingPoll({
     try {
       const count = await fetchCount()
       if (running && !again) onCount(count)
-    } catch {
-      // 保留上一次的数字
+    } catch (error) {
+      if (running && !again) onError?.(error)
     } finally {
       inFlight = false
       if (again) { again = false; refresh() }

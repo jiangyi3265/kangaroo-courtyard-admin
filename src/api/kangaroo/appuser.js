@@ -17,6 +17,10 @@ export function getAppUser(userId) {
   })
 }
 
+export function setHonoraryTitle(userId, honoraryTitle) {
+  return request({ url: '/kangaroo/appuser/' + userId + '/honorary-title', method: 'put', data: { honoraryTitle } })
+}
+
 // 小程序账号状态修改（0启用 1停用）
 export function changeAppUserStatus(userId, status) {
   const data = {

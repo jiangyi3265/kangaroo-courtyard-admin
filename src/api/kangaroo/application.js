@@ -48,6 +48,10 @@ export function onboardApplication(appId) {
   })
 }
 
+export function finishApplicationWork(appId, reason) {
+  return request({ url: '/kangaroo/application/work-end/' + appId, method: 'put', data: { reason } })
+}
+
 // 终止申请（必须带 reason）
 export function terminateApplication(data) {
   return request({

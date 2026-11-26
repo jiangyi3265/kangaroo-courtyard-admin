@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <p class="grant-guide">门店未开通时，可先按城市授予员工身份。内部员工仅在本城使用所选角色的权限；已有门店授权或撤销记录优先。合作商家先获得待绑定身份，由平台绑定真实门店后开展业务。岗位详情里的城市负责人称呼和头像，请在「城市字典」中维护。</p>
+    <p class="grant-guide">门店未开通时，可先按城市授予员工身份。角色切换后，换工主理人可在其他门店协作招聘；其他内部员工按本城授权处理业务。已有门店授权或撤销记录优先。合作商家先获得待绑定身份，由平台绑定真实门店后开展业务。岗位详情里的城市负责人称呼和头像，请在「城市字典」中维护。</p>
     <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="88px">
       <el-form-item label="门店" prop="storeId">
         <el-select v-model="queryParams.storeId" placeholder="请选择门店" clearable filterable style="width: 200px">

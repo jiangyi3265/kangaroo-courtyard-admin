@@ -3,6 +3,16 @@ export const insuranceStatus = {
   refunding: '退费处理中', refunded: '已退费', rejected: '已驳回', closed: '已关闭'
 }
 export const refundStatus = { pending: '待审核', processing: '渠道处理中', success: '已到账', rejected: '未通过', failed: '退费未完成', closed: '渠道已关闭，可重新申请' }
+export function refundLabel(row, policyNo = row.policyNo) {
+  if (row.hqDeparture && row.status === 'pending') return '待总部核实离店日期并办理'
+  if (row.verifiedDepartureDate) {
+    if (row.status === 'rejected') return '可退为零，已结案'
+    if (row.status === 'pending' && row.amountFen != null && Number(row.amountFen) === 0) return '可退为零，待城市负责人确认'
+  }
+  if (row.status === 'pending' && policyNo)
+    return row.verifiedDepartureDate ? '待城市负责人办理退款' : row.departureDate ? '待换工主理人或城市负责人核实离店日期' : '待店家补充离店日期'
+  return refundStatus[row.status] || row.status
+}
 export const destinationLabel = value => value === 'balance' ? '预存保险余额' : value === 'original' ? '原路退回' : '未记录'
 export const money = fen => fen != null && fen !== '' && Number.isSafeInteger(Number(fen)) ? (Number(fen) / 100).toFixed(2) : '—'
 export const amountToFen = value => {

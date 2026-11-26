@@ -7,4 +7,5 @@ export const registerInsurancePolicy = (id, data) => request({ url: `${base}/app
 export const rejectInsuranceApply = (id, data) => request({ url: `${base}/applies/${id}/reject`, method: 'post', data })
 export const listInsuranceRefunds = params => request({ url: `${base}/refunds`, params })
 export const auditInsuranceRefund = (id, data) => request({ url: `${base}/refunds/${id}/audit`, method: 'post', data })
+export const previewInsuranceRefund = (id, data) => request({ url: `${base}/refunds/${id}/preview`, method: 'post', data })
 export const recheckInsuranceRefund = id => request({ url: `${base}/refunds/${id}/recheck`, method: 'post' })

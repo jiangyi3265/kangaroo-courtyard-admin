@@ -165,8 +165,9 @@
     />
 
     <!-- 添加或修改面试时段对话框 -->
-    <el-dialog :title="title" v-model="open" width="560px" append-to-body>
-      <el-form ref="slotRef" :model="form" :rules="rules" label-width="100px">
+    <el-dialog :title="title" v-model="open" width="560px" append-to-body :before-close="closeEditor" :show-close="!saving">
+      <el-alert v-if="saveUncertain" title="未收到保存结果。时段列表已请求刷新，请关闭此窗口，按门店和起止时间核对后再重试。" type="warning" :closable="false" show-icon />
+      <el-form ref="slotRef" :model="form" :rules="rules" label-width="100px" :disabled="saving">
         <el-form-item label="门店" prop="storeId">
           <el-select v-model="form.storeId" placeholder="请选择门店" style="width: 100%" @change="handleStoreChange">
             <el-option
@@ -222,8 +223,8 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" :loading="saving" @click="submitForm">确 定</el-button>
+          <el-button :disabled="saving" @click="cancel">取 消</el-button>
         </div>
       </template>
     </el-dialog>
@@ -238,6 +239,10 @@ const { kg_slot_status } = proxy.useDict("kg_slot_status")
 
 const slotList = ref([])
 const open = ref(false)
+let listRequest = 0
+let editorRequest = 0
+const saving = ref(false)
+const saveUncertain = ref(false)
 const loading = ref(true)
 const showSearch = ref(window.innerWidth > 768)  // 手机上搜索栏先收起，点右边放大镜再展开
 const ids = ref([])
@@ -276,18 +281,21 @@ const editableStatus = computed(() => kg_slot_status.value.filter(dict => dict.v
 
 /** 查询面试时段列表 */
 function getList() {
+  const request = ++listRequest
   loading.value = true
   listSlot(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
+    if (request !== listRequest) return
     slotList.value = response.rows
     total.value = response.total
   }).catch(() => {
+    if (request !== listRequest) return
     // 查询失败必须把上一次的结果清掉：留着旧数据和旧 total，
     // 运营会把它当成本次查询的结果。具体错误 request.js 已经弹过了。
     slotList.value = []
     total.value = 0
   }).finally(() => {
     // loading 收敛在 finally：无论成功、失败还是以后新增分支，遮罩都一定会关
-    loading.value = false
+    if (request === listRequest) loading.value = false
   })
 }
 
@@ -343,12 +351,21 @@ function inDict(options, value) {
 
 /** 取消按钮 */
 function cancel() {
+  if (saving.value) return
+  editorRequest++
   open.value = false
   reset()
 }
 
+function closeEditor(done) {
+  if (saving.value) return
+  editorRequest++
+  done()
+}
+
 /** 表单重置 */
 function reset() {
+  saveUncertain.value = false
   form.value = {
     slotId: undefined,
     storeId: undefined,
@@ -384,6 +401,8 @@ function handleSelectionChange(selection) {
 
 /** 新增按钮操作 */
 function handleAdd() {
+  if (saving.value) return
+  editorRequest++
   reset()
   open.value = true
   title.value = "添加面试时段"
@@ -391,9 +410,12 @@ function handleAdd() {
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
+  if (saving.value) return
+  const request = ++editorRequest
   reset()
-  const slotId = row.slotId || ids.value
+  const slotId = row.slotId || ids.value[0]
   getSlot(slotId).then(response => {
+    if (request !== editorRequest) return
     form.value = response.data
     open.value = true
     title.value = "修改面试时段"
@@ -409,26 +431,29 @@ function handleStoreChange() {
 }
 
 /** 提交按钮 */
-function submitForm() {
-  proxy.$refs["slotRef"].validate(valid => {
-    if (valid) {
-      // catch 里刻意什么都不做：时间先后/不重叠这些规则在后端，失败时弹窗要保持打开
-      // 让用户改完再提交，这里接住 reject 只是为了不留未处理的 promise
-      if (form.value.slotId != undefined) {
-        updateSlot(form.value).then(() => {
-          proxy.$modal.msgSuccess("修改成功")
-          open.value = false
-          getList()
-        }).catch(() => {})
-      } else {
-        addSlot(form.value).then(() => {
-          proxy.$modal.msgSuccess("新增成功")
-          open.value = false
-          getList()
-        }).catch(() => {})
-      }
+async function submitForm() {
+  if (!open.value || saving.value) return
+  const request = editorRequest
+  saving.value = true
+  try {
+    await proxy.$refs["slotRef"].validate()
+    saveUncertain.value = false
+    const payload = { ...form.value }
+    const editing = payload.slotId != null
+    if (editing) await updateSlot(payload)
+    else await addSlot(payload)
+    if (request !== editorRequest) return
+    proxy.$modal.msgSuccess(editing ? "修改成功" : "新增成功")
+    open.value = false
+    getList()
+  } catch (error) {
+    if (error?.isAxiosError && (!error.response || error.response.status >= 500)) {
+      saveUncertain.value = true
+      getList()
     }
-  })
+  } finally {
+    saving.value = false
+  }
 }
 
 /** 删除按钮操作 */
@@ -444,4 +469,5 @@ function handleDelete(row) {
 
 getOptions()
 getList()
+onBeforeUnmount(() => { editorRequest++ })
 </script>
