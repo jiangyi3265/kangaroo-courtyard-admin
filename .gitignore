@@ -4,6 +4,7 @@ dist/
 unpackage/
 target/
 build/
+!/src/views/tool/build/
 coverage/
 .vite/
 .gradle/
